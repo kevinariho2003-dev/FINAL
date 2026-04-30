@@ -1,0 +1,217 @@
+/* ══════════════════════════════════════════════
+   Donation Cycles — Clinical Glass v2.0
+   ══════════════════════════════════════════════ */
+
+/* ── Cycles Grid ── */
+.cycles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media (max-width: 900px) { .cycles-grid { grid-template-columns: 1fr; } }
+
+.cycle-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    transition: all 0.35s var(--ease-out);
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--glass-shadow);
+}
+.cycle-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+.cycle-card.pending::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.cycle-card.successful::before { background: linear-gradient(90deg, #10b981, #34d399); }
+.cycle-card.unsuccessful::before { background: linear-gradient(90deg, #ef4444, #f87171); }
+.cycle-card.cancelled::before { background: linear-gradient(90deg, #6b7280, #9ca3af); }
+.cycle-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+    border-color: var(--border-hover);
+}
+
+.cycle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+.cycle-pair {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+.cycle-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.78rem; font-weight: 800;
+    color: #fff; flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.cycle-avatar.donor { background: linear-gradient(135deg, var(--role-donor), #f9a8d4); }
+.cycle-avatar.recipient { background: linear-gradient(135deg, var(--role-recipient), #c4b5fd); }
+.cycle-pair-arrow { color: var(--text-muted); font-size: 1rem; flex-shrink: 0; }
+.cycle-pair-info { display: flex; flex-direction: column; gap: 0.05rem; }
+.cycle-pair-name { font-weight: 700; font-size: 0.85rem; color: var(--text-primary); }
+.cycle-pair-label {
+    font-size: 0.68rem; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700;
+}
+
+.cycle-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+.cycle-detail { display: flex; flex-direction: column; gap: 0.1rem; }
+.cycle-detail-label {
+    font-size: 0.68rem; text-transform: uppercase;
+    color: var(--text-muted); letter-spacing: 0.06em; font-weight: 700;
+}
+.cycle-detail-value {
+    font-size: 0.88rem; font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* ── Medications ── */
+.meds-section {
+    margin-top: 0.75rem; padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+}
+.meds-title {
+    font-size: 0.75rem; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--text-muted);
+    margin-bottom: 0.5rem; font-weight: 700;
+    display: flex; align-items: center; gap: 0.4rem;
+}
+.med-chip {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: var(--accent-subtle);
+    border: 1px solid rgba(14, 165, 233, 0.12);
+    border-radius: var(--radius-full);
+    padding: 0.28rem 0.65rem;
+    font-size: 0.76rem; color: var(--text-primary);
+    margin: 0.15rem;
+    transition: all 0.25s var(--ease-out);
+}
+.med-chip:hover {
+    background: rgba(14, 165, 233, 0.12);
+    box-shadow: 0 2px 8px var(--accent-glow);
+}
+.med-chip .med-remove {
+    width: 16px; height: 16px;
+    border-radius: 50%; border: none;
+    background: var(--danger-bg); color: #ef4444;
+    font-size: 0.6rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+}
+.med-chip .med-remove:hover { background: #ef4444; color: #fff; }
+
+/* ── Payment Badge ── */
+.payment-badge {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    padding: 0.3rem 0.65rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem; font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+}
+.payment-badge.pending { background: var(--warning-bg); color: #f59e0b; }
+.payment-badge.processing { background: var(--info-bg); color: #6366f1; }
+.payment-badge.completed { background: var(--success-bg); color: #10b981; }
+.payment-badge.failed { background: var(--danger-bg); color: #ef4444; }
+
+/* ── Cycle Actions ── */
+.cycle-actions {
+    display: flex; gap: 0.5rem; flex-wrap: wrap;
+    margin-top: 0.75rem; padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+}
+.cycle-actions .btn { font-size: 0.78rem; padding: 0.38rem 0.7rem; }
+
+/* ── Modal ── */
+.modal-overlay {
+    position: fixed; inset: 0;
+    background: var(--bg-modal-overlay);
+    backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s var(--ease-out);
+}
+.modal-card {
+    background: var(--bg-card-solid);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 2rem;
+    width: 90%; max-width: 520px;
+    max-height: 85vh; overflow-y: auto;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+    animation: slideUp 0.3s var(--ease-spring);
+}
+.modal-card h2 {
+    font-size: 1.2rem; font-weight: 800;
+    margin-bottom: 1.5rem; color: var(--text-primary);
+    letter-spacing: -0.02em;
+}
+
+/* ── Donor Photo Upload ── */
+.donor-photo-section {
+    display: flex; align-items: center; gap: 1.5rem; padding: 0.5rem;
+}
+.donor-photo-container {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(244,114,182,0.08), rgba(167,139,250,0.08));
+    border: 3px dashed rgba(244,114,182,0.2);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; position: relative;
+    transition: all 0.3s var(--ease-out);
+    flex-shrink: 0;
+}
+.donor-photo-container:hover {
+    border-color: rgba(244,114,182,0.45);
+    transform: scale(1.03);
+    box-shadow: 0 0 25px rgba(244,114,182,0.15);
+}
+.donor-photo-container.uploading { opacity: 0.7; pointer-events: none; }
+.donor-photo-img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.donor-photo-placeholder {
+    display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+}
+.donor-photo-icon { font-size: 2rem; opacity: 0.4; }
+.donor-photo-text { font-size: 0.62rem; color: var(--text-muted); text-align: center; line-height: 1.3; }
+.donor-photo-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.45); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+}
+.donor-photo-edit-badge {
+    position: absolute; bottom: 4px; right: 4px;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--role-donor), var(--role-recipient));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.82rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+    transition: transform 0.25s var(--ease-spring);
+}
+.donor-photo-container:hover .donor-photo-edit-badge { transform: scale(1.15); }
+.donor-photo-info { flex: 1; }
+.donor-photo-hint { font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 0.3rem; line-height: 1.5; }
+.donor-photo-specs { font-size: 0.72rem; color: var(--text-muted); font-weight: 500; }
+
+/* ── Animations ── */
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}

@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>EDRMS ER Diagram</title>
+    <style>
+        @page { size: A4 landscape; margin: 8mm; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #fff; display: flex; justify-content: center; padding: 8px; }
+        .canvas { position: relative; width: 1020px; height: 760px; }
+
+        .entity { position: absolute; width: 175px; border: 1.5px solid #111; background: #fff; z-index: 2; }
+        .entity .en { padding: 6px 10px; text-align: center; font-weight: 700; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; border-bottom: 1.5px solid #111; background: #f8f8f8; }
+        .entity .eb { padding: 3px 0; }
+        .entity .a { padding: 1.5px 10px; font-size: 10px; font-style: italic; line-height: 1.4; color: #111; }
+        .entity .a .t { font-style: normal; font-weight: 700; font-size: 8.5px; color: #888; }
+
+        svg.L { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        svg.L polyline, svg.L line { fill: none; stroke: #111; stroke-width: 1.2; }
+        svg.L .m { stroke-width: 1.8; }
+        svg.L .c { font-family: 'Segoe UI', Arial, sans-serif; font-size: 10px; font-weight: 700; fill: #111; }
+        svg.L .r { font-family: 'Segoe UI', Arial, sans-serif; font-size: 10px; font-style: italic; fill: #333; paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
+        svg.L .dashed { stroke-dasharray: 5,3; stroke: #666; }
+
+        .legend { position: absolute; bottom: 5px; left: 8px; font-size: 9.5px; color: #555; z-index: 3; }
+        @media print { body { padding: 0; } }
+    </style>
+</head>
+<body>
+<div class="canvas">
+
+<svg class="L" xmlns="http://www.w3.org/2000/svg">
+
+    <!-- L1: USERS ↔ ADMIN (1:1) extends -->
+    <polyline points="310,75 230,75"/>
+    <line class="m" x1="310" y1="68" x2="310" y2="82"/>
+    <line class="m" x1="230" y1="68" x2="230" y2="82"/>
+    <text class="c" x="314" y="72">1</text>
+    <text class="c" x="218" y="72">1</text>
+    <text class="r" x="252" y="69">extends</text>
+
+    <!-- L2: USERS → CLINICIANS (1:1) extends -->
+    <polyline points="345,167 345,188 97,188 97,215"/>
+    <line class="m" x1="338" y1="167" x2="352" y2="167"/>
+    <line class="m" x1="90" y1="215" x2="104" y2="215"/>
+    <text class="c" x="354" y="164">1</text>
+    <text class="c" x="107" y="213">1</text>
+    <text class="r" x="185" y="184">extends</text>
+
+    <!-- L3: USERS → DONORS (1:1) extends -->
+    <polyline points="400,167 400,193 307,193 307,215"/>
+    <line class="m" x1="393" y1="167" x2="407" y2="167"/>
+    <line class="m" x1="300" y1="215" x2="314" y2="215"/>
+    <text class="c" x="409" y="164">1</text>
+    <text class="c" x="316" y="213">1</text>
+    <text class="r" x="335" y="189">extends</text>
+
+    <!-- L4: USERS → RECIPIENTS (1:1) extends -->
+    <polyline points="455,167 455,198 527,198 527,215"/>
+    <line class="m" x1="448" y1="167" x2="462" y2="167"/>
+    <line class="m" x1="520" y1="215" x2="534" y2="215"/>
+    <text class="c" x="464" y="164">1</text>
+    <text class="c" x="536" y="213">1</text>
+    <text class="r" x="462" y="194">extends</text>
+
+    <!-- L5: DONORS → MEDICAL_SCREENINGS (1:*) undergoes -->
+    <polyline points="260,386 260,408 97,408 97,434"/>
+    <line class="m" x1="253" y1="386" x2="267" y2="386"/>
+    <line class="m" x1="90" y1="434" x2="104" y2="434"/>
+    <text class="c" x="269" y="383">1</text>
+    <text class="c" x="80" y="432">*</text>
+    <text class="r" x="145" y="404">undergoes</text>
+
+    <!-- L6: DONORS → APPOINTMENTS (1:*) schedules -->
+    <polyline points="307,386 307,434"/>
+    <line class="m" x1="300" y1="386" x2="314" y2="386"/>
+    <line class="m" x1="300" y1="434" x2="314" y2="434"/>
+    <text class="c" x="316" y="383">1</text>
+    <text class="c" x="316" y="432">*</text>
+    <text class="r" x="313" y="412">schedules</text>
+
+    <!-- L7: DONORS → MATCHES (1:*) matched in -->
+    <polyline points="360,386 360,413 480,413 480,434"/>
+    <line class="m" x1="353" y1="386" x2="367" y2="386"/>
+    <line class="m" x1="473" y1="434" x2="487" y2="434"/>
+    <text class="c" x="369" y="383">1</text>
+    <text class="c" x="489" y="432">*</text>
+    <text class="r" x="390" y="409">matched in</text>
+
+    <!-- L8: RECIPIENTS → MATCHES (1:*) matched for -->
+    <polyline points="545,386 545,434"/>
+    <line class="m" x1="538" y1="386" x2="552" y2="386"/>
+    <line class="m" x1="538" y1="434" x2="552" y2="434"/>
+    <text class="c" x="554" y="383">1</text>
+    <text class="c" x="554" y="432">*</text>
+    <text class="r" x="551" y="412">matched for</text>
+
+    <!-- L9: DC → MEDICATIONS (1:*) prescribes -->
+    <polyline points="220,670 185,670"/>
+    <line class="m" x1="220" y1="663" x2="220" y2="677"/>
+    <line class="m" x1="185" y1="663" x2="185" y2="677"/>
+    <text class="c" x="222" y="666">1</text>
+    <text class="c" x="173" y="666">*</text>
+    <text class="r" x="157" y="660">prescribes</text>
+
+    <!-- L10: DC → PAYMENTS (1:1) compensates -->
+    <polyline points="395,675 440,675"/>
+    <line class="m" x1="395" y1="668" x2="395" y2="682"/>
+    <line class="m" x1="440" y1="668" x2="440" y2="682"/>
+    <text class="c" x="397" y="668">1</text>
+    <text class="c" x="443" y="668">1</text>
+    <text class="r" x="389" y="662">compensates</text>
+
+    <!-- L11: USERS → CONSENTS (1:*) grants -->
+    <polyline points="485,50 820,50"/>
+    <line class="m" x1="485" y1="43" x2="485" y2="57"/>
+    <line class="m" x1="820" y1="43" x2="820" y2="57"/>
+    <text class="c" x="489" y="46">1</text>
+    <text class="c" x="808" y="46">*</text>
+    <text class="r" x="625" y="44">grants</text>
+
+    <!-- L12: USERS → NOTIFICATIONS (1:*) receives -->
+    <polyline points="485,90 730,90 730,222 820,222"/>
+    <line class="m" x1="485" y1="83" x2="485" y2="97"/>
+    <line class="m" x1="820" y1="215" x2="820" y2="229"/>
+    <text class="c" x="489" y="86">1</text>
+    <text class="c" x="808" y="219">*</text>
+    <text class="r" x="735" y="165">receives</text>
+
+    <!-- L13: USERS → AUDIT_LOGS (1:*) generates -->
+    <polyline points="485,70 755,70 755,395 820,395"/>
+    <line class="m" x1="485" y1="63" x2="485" y2="77"/>
+    <line class="m" x1="820" y1="388" x2="820" y2="402"/>
+    <text class="c" x="489" y="66">1</text>
+    <text class="c" x="808" y="392">*</text>
+    <text class="r" x="760" y="250">generates</text>
+
+    <!-- L14: DONORS → DONATION_CYCLES (1:*) participates -->
+    <polyline points="220,335 4,335 4,600 255,600 255,612"/>
+    <line class="m" x1="220" y1="328" x2="220" y2="342"/>
+    <line class="m" x1="248" y1="612" x2="262" y2="612"/>
+    <text class="c" x="208" y="332">1</text>
+    <text class="c" x="264" y="610">*</text>
+    <text class="r" x="8" y="475">participates</text>
+
+    <!-- L15: RECIPIENTS → DONATION_CYCLES (1:*) receives -->
+    <polyline points="615,320 640,320 640,595 360,595 360,612"/>
+    <line class="m" x1="615" y1="313" x2="615" y2="327"/>
+    <line class="m" x1="353" y1="612" x2="367" y2="612"/>
+    <text class="c" x="618" y="317">1</text>
+    <text class="c" x="340" y="610">*</text>
+    <text class="r" x="644" y="470">receives</text>
+
+    <!-- L16: ADMIN → AUDIT_LOGS (1:*) monitors [dashed] -->
+    <polyline class="dashed" points="142,10 142,3 780,3 780,380 820,380"/>
+    <line class="m" x1="135" y1="10" x2="149" y2="10" style="stroke:#666"/>
+    <line class="m" x1="820" y1="373" x2="820" y2="387" style="stroke:#666"/>
+    <text class="c" x="151" y="8" fill="#666">1</text>
+    <text class="c" x="808" y="378" fill="#666">*</text>
+    <text class="r" x="420" y="0" fill="#666">monitors</text>
+
+</svg>
+
+<!-- ═══════ ROW 0: IDENTITY ═══════ -->
+
+<div class="entity" style="left:55px; top:10px;">
+    <div class="en">Admin</div>
+    <div class="eb">
+        <div class="a">Id <span class="t">(PK)</span></div>
+        <div class="a">User_ID <span class="t">(FK)</span></div>
+        <div class="a">access_level</div>
+        <div class="a">department</div>
+        <div class="a">permissions</div>
+        <div class="a">last_login_at</div>
+    </div>
+</div>
+
+<div class="entity" style="left:310px; top:10px;">
+    <div class="en">Users</div>
+    <div class="eb">
+        <div class="a">Id <span class="t">(PK)</span></div>
+        <div class="a">first_name</div>
+        <div class="a">last_name</div>
+        <div class="a">email</div>
+        <div class="a">phone</div>
+        <div class="a">date_of_birth</div>
+        <div class="a">role</div>
+        <div class="a">password</div>
+        <div class="a">is_active</div>
+    </div>
+</div>
+
+<!-- ═══════ ROW 1: PROFILES ═══════ -->
+
+<div class="entity" style="left:10px; top:215px;">
+    <div class="en">Clinicians</div>
+    <div class="eb">
+        <div class="a">Id <span class="t">(PK)</span></div>
+        <div class="a">User_ID <span class="t">(FK)</span></div>
+        <div class="a">specialization</div>
+        <div class="a">license_number</div>
+        <div class="a">years_of_experience</div>
+        <div class="a">bio</div>
+    </div>
+</div>
+
+<div class="entity" style="left:220px; top:215px;">
+    <div class="en">Donors</div>
+    <div class="eb">
+        <div class="a">Id <span class="t">(PK)</span></div>
+        <div class="a">User_ID <span class="t">(FK)</span></div>
+        <div class="a">donor_code</div>
+        <div class="a">status</div>
+        <div class="a">blood_type</div>
+        <div class="a">genotype</div>
+        <div class="a">BMI</div>
+        <div class="a">ethnicity</div>
+        <div class="a">education_level</div>
+        <div class="a">availability_status</div>
+    </div>
+</div>
+
+<div class="entity" style="left:440px; top:215px;">
+    <div class="en">Recipients</div>
+    <div class="eb">
+        <div class="a">Id <span class="t">(PK)</span></div>
+        <div class="a">User_ID <span class="t">(FK)</span></div>
+        <div class="a">recipient_code</div>
+        <div class="a">status</div>
+        <div class="a">diagnosis</div>
+        <div class="a">preferred_blood_type</div>
+        <div class="a">preferred_genotype</div>
+        <div class="a">preferred_ethnicity</div>
+        <div class="a">priority_level</div>
+        <div class="a">Clinician_ID <span class="t">(FK)</span></div>
+    </div>
+</div>
+
+<!-- ═══════ ROW 2: OPERATIONS ═══════ -->
+
+<div class="entity" style="left:10px; top:434px;">
+    <div class="en">Medical Screenings</div>
+    <div class="eb">
+        <div class="a">Id <span class="t">(PK)</span></div>
+        <div class="a">Donor_ID <span class="t">(FK)</span></div>
+        <div class="a">screening_date</div>
+        <div class="a">document_type</div>
+        <div class="a">test_results</div>
+        <div class="a">approval_status</div>
+        <div class="a">Reviewed_By <span class="t">(FK)</span></div>
+    </div>
+</div>
+
+<div class="entity" style="left:220px; top:434px;">
+    <div class="en">Appointments</div>
+    <div class="eb">
+        <div class="a">Id <span class="t">(PK)</span></div>
+        <div class="a">Donor_ID <span class="t">(FK)</span></div>
+        <div class="a">appointment_type</div>
+        <div class="a">preferred_date</div>
+        <div class="a">preferred_time_slot</div>
+        <div class="a">status</div>
+        <div class="a">Confirmed_By <span class="t">(FK)</span></div>
+    </div>
+</div>
+
+<div class="entity" style="left:440px; top:434px;">
+    <div class="en">Matches</div>
+    <div class="eb">
+        <div class="a">Id <span class="t">(PK)</span></div>
+        <div class="a">Recipient_ID <span class="t">(FK)</span></div>
+        <div class="a">Donor_ID <span class="t">(FK)</span></div>
+        <div class="a">match_score</div>
+        <div class="a">score_breakdown</div>
+        <div class="a">status</div>
+        <div class="a">matched_by</div>
+        <div class="a">Reviewed_By <span class="t">(FK)</span></div>
+    </div>
+</div>
+
+<!-- ═══════ ROW 3: CYCLES & DETAILS ═══════ -->
+
+<div class="entity" style="left:10px; top:612px;">
+    <div class="en">Medications</div>
+    <div class="eb">
+        <div class="a">Id <span class="t">(PK)</span></div>
+        <div class="a">Cycle_ID <span class="t">(FK)</span></div>
+        <div class="a">drug_name</div>
+        <div class="a">dosage</div>
+        <div class="a">frequency</div>
+        <div class="a">duration</div>
+    </div>
+</div>
+
+<div class="entity" style="left:220px; top:612px;">
+    <div class="en">Donation Cycles</div>
+    <div class="eb">
+        <div class="a">Id <span class="t">(PK)</span></div>
+        <div class="a">Donor_ID <span class="t">(FK)</span></div>
+        <div class="a">Recipient_ID <span class="t">(FK)</span></div>
+        <div class="a">start_date</div>
+        <div class="a">end_date</div>
+        <div class="a">outcome</div>
+        <div class="a">eggs_retrieved</div>
+    </div>
+</div>
+
+<div class="entity" style="left:440px; top:612px;">
+    <div class="en">Payments</div>
+    <div class="eb">
+        <div class="a">Id <span class="t">(PK)</span></div>
+        <div class="a">Donor_ID <span class="t">(FK)</span></div>
+        <div class="a">Cycle_ID <span class="t">(FK)</span></div>
+        <div class="a">amount</div>
+        <div class="a">payment_date</div>
+        <div class="a">payment_status</div>
+        <div class="a">payment_method</div>
+        <div class="a">reference_number</div>
+    </div>
+</div>
+
+<!-- ═══════ RIGHT COLUMN: COMPLIANCE ═══════ -->
+
+<div class="entity" style="left:820px; top:10px;">
+    <div class="en">Consents</div>
+    <div class="eb">
+        <div class="a">Id <span class="t">(PK)</span></div>
+        <div class="a">User_ID <span class="t">(FK)</span></div>
+        <div class="a">consent_type</div>
+        <div class="a">status</div>
+        <div class="a">consent_text</div>
+        <div class="a">granted_at</div>
+    </div>
+</div>
+
+<div class="entity" style="left:820px; top:165px;">
+    <div class="en">Notifications</div>
+    <div class="eb">
+        <div class="a">Id <span class="t">(PK)</span></div>
+        <div class="a">User_ID <span class="t">(FK)</span></div>
+        <div class="a">type</div>
+        <div class="a">title</div>
+        <div class="a">message</div>
+        <div class="a">is_read</div>
+    </div>
+</div>
+
+<div class="entity" style="left:820px; top:330px;">
+    <div class="en">Audit Logs</div>
+    <div class="eb">
+        <div class="a">Id <span class="t">(PK)</span></div>
+        <div class="a">User_ID <span class="t">(FK)</span></div>
+        <div class="a">action</div>
+        <div class="a">resource_type</div>
+        <div class="a">resource_id</div>
+        <div class="a">old_values</div>
+        <div class="a">new_values</div>
+    </div>
+</div>
+
+<!-- Legend -->
+<div class="legend">
+    <span class="t" style="font-size:9px">(PK)</span> Primary Key &nbsp;
+    <span class="t" style="font-size:9px">(FK)</span> Foreign Key &nbsp;
+    <b>1</b> One &nbsp; <b>*</b> Many &nbsp;
+    <span style="display:inline-block; width:20px; border-top:1.5px dashed #666; vertical-align:middle; margin:0 3px;"></span>
+    <i style="font-size:9px; color:#666;">conceptual</i>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>ED-RMS System Design Report (Structured Analysis)</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cambria&family=Calibri:wght@400;700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    body {
+      font-family: 'Calibri', 'Segoe UI', sans-serif;
+      background: #e0e0e0;
+      color: #1a1a1a;
+      font-size: 12pt;
+      line-height: 1.6
+    }
+
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 20px auto;
+      background: #fff;
+      padding: 25mm 25mm 20mm 25mm;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, .15);
+      position: relative
+    }
+
+    h1 {
+      font-family: 'Cambria', serif;
+      font-size: 24pt;
+      color: #1a3c6e;
+      text-align: center;
+      margin-bottom: 4px;
+      border-bottom: 3px double #1a3c6e;
+      padding-bottom: 10px
+    }
+
+    h2 {
+      font-family: 'Cambria', serif;
+      font-size: 18pt;
+      color: #1a3c6e;
+      margin: 32px 0 16px;
+      border-bottom: 2px solid #1a3c6e;
+      padding-bottom: 6px
+    }
+
+    h3 {
+      font-family: 'Cambria', serif;
+      font-size: 15pt;
+      color: #2c5f9e;
+      margin: 22px 0 10px
+    }
+
+    p {
+      margin: 8px 0;
+      font-size: 13pt
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 24px;
+      font-size: 12pt
+    }
+
+    th {
+      background: #1a3c6e;
+      color: #fff;
+      padding: 10px 12px;
+      text-align: left;
+      font-weight: 700
+    }
+
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #ddd
+    }
+
+    tr:nth-child(even) td {
+      background: #f5f7fa
+    }
+
+    .diagram-box {
+      background: #fdfdfd;
+      border: 2px solid #c0c7d2;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      text-align: center;
+      overflow-x: auto;
+      min-height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .diagram-box .mermaid {
+      width: 100%;
+      max-width: 1400px
+    }
+
+    .caption {
+      font-style: italic;
+      font-size: 12pt;
+      color: #555;
+      text-align: center;
+      margin-top: 8px;
+      font-weight: bold
+    }
+
+    .page-break {
+      page-break-before: always
+    }
+
+    @media print {
+      body {
+        background: #fff
+      }
+
+      .page {
+        box-shadow: none;
+        margin: 0;
+        padding: 20mm;
+        width: 100%
+      }
+
+      .page-break {
+        page-break-before: always
+      }
+
+      .diagram-box {
+        border: 1px solid #000;
+        break-inside: avoid
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ============ COVER PAGE ============ -->
+  <div class="page"
+    style="display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:297mm">
+    <div style="text-align:center">
+      <h1 style="font-size:32pt;border:none;margin-bottom:20px">ED-RMS</h1>
+      <h2 style="font-size:24pt;border:none;color:#333;margin:0 0 12px">System Design Report</h2>
+      <p style="font-size:16pt;color:#555">Egg Donor-Recipient Match System</p>
+      <p style="font-size:14pt;color:#777;margin-top:30px">SpringRose Fertility Clinic — Pilot Project</p>
+      <hr style="margin:40px auto;width:70%;border:2px solid #1a3c6e">
+      <p style="font-size:14pt;color:#888;font-weight:bold">Structured Analysis and Design Methodology</p>
+      <p style="font-size:12pt;color:#888;margin-top:10px">IST 3201 — Requirements Specification</p>
+      <p style="font-size:12pt;color:#888">March 2026</p>
+    </div>
+  </div>
+
+  <!-- ============ COMPONENT 4.6 ============ -->
+  <div class="page page-break">
+    <h2>4.6 High level architecture of the developed system</h2>
+    <p>The ED-RMS system architecture is designed to support a robust, secure, and scalable matching process. It follows
+      a standard three-tier architecture model, separating the presentation layer from the business logic and data
+      storage.</p>
+
+    <div class="diagram-box">
+      <pre class="mermaid">
+%%{init: {'theme': 'default', 'themeVariables': { 'fontSize': '15px'}}}%%
+flowchart TD
+    subgraph Client ["Client Layer"]
+        Browser("Web Browser (React/Vite)")
+    end
+
+    subgraph Logic ["Application Logic Layer"]
+        API("Laravel REST API Engine")
+        Matching("MCDA Matching Engine")
+    end
+
+    subgraph Data ["Data Layer"]
+        DB[("MySQL Database")]
+    end
+
+    Browser <-->|JSON over HTTPS| API
+    API <-->|Internal Call| Matching
+    API <-->|SQL Queries| DB
+
+    classDef layer fill:#f1f8ff,stroke:#2c5f9e,stroke-width:2px;
+    class Client,Logic,Data layer;
+</pre>
+    </div>
+    <p class="caption">Figure 1: High-Level System Architecture</p>
+
+    <h3>Architectural Components</h3>
+    <table>
+      <tr>
+        <th>Tier</th>
+        <th>Technology</th>
+        <th>Responsibility</th>
+      </tr>
+      <tr>
+        <td>Presentation Layer</td>
+        <td>React.js (Vite)</td>
+        <td>Provides user interfaces for Donors, Recipients, Clinicians, and Admins. Handles client-side validation and
+          rendering.</td>
+      </tr>
+      <tr>
+        <td>Application Logic Layer</td>
+        <td>PHP (Laravel 11)</td>
+        <td>Processes logic, authenticates requests (Sanctum), enforces RBAC, and executes the sophisticated
+          Multi-Criteria Decision Analysis (MCDA) matching engine.</td>
+      </tr>
+      <tr>
+        <td>Data Management Layer</td>
+        <td>MySQL (XAMPP)</td>
+        <td>Stores structured relational data including profiles, consent documents, and matching audit logs.</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ============ COMPONENT 4.7 ============ -->
+  <div class="page page-break">
+    <h2>4.7 The Flow Chart of the developed system</h2>
+    <p>The Flow Chart visually represents the step-by-step sequence of operations and decisions that occur within the
+      ED-RMS system, from user registration through to the final matching process and clinician review.</p>
+
+    <div class="diagram-box">
+      <pre class="mermaid">
+%%{init: {'theme': 'default', 'themeVariables': { 'fontSize': '15px'}, 'flowchart': { 'nodeSpacing': 50, 'rankSpacing': 60}}}%%
+flowchart TD
+    Start([Start]) --> Login{User Registered?}
+    Login -- No --> Register[Register User Account]
+    Register --> Role{User Role?}
+    Login -- Yes --> Auth[Authenticate]
+    Auth --> Role
+    
+    Role -- Donor --> DonorDash[Access Donor Dashboard]
+    DonorDash --> MedProf[Submit Medical Profile and Consent]
+    MedProf --> PendingApproval[Await Clinician Approval]
+    
+    Role -- Recipient --> RecipDash[Access Recipient Dashboard]
+    RecipDash --> SetPrefs[Submit Preferences and Diagnosis]
+    SetPrefs --> ReqMatch[Request Match]
+    
+    Role -- Clinician --> ClinDash[Access Clinician Dashboard]
+    PendingApproval -.-> ClinDash
+    ReqMatch -.-> ClinDash
+    
+    ClinDash --> Trigger[Execute Matching Engine]
+    Trigger --> MCDA[Apply Hard Filters and MCDA Algorithm]
+    MCDA --> Results[Generate Ranked Matches]
+    Results --> Review{Clinician Review}
+    
+    Review -- Approved --> Notify[Notify Recipient and Donor]
+    Review -- Rejected --> Discard[Discard Match]
+    
+    Notify --> End([End Process])
+    Discard --> End
+</pre>
+    </div>
+    <p class="caption">Figure 2: System Flow Chart</p>
+  </div>
+
+  <!-- ============ COMPONENT 4.8 ============ -->
+  <div class="page page-break">
+    <h2>4.8 The Context Diagram (For Structured)</h2>
+    <p>The Context Diagram (Level 0 DFD) establishes the system boundary and shows the interaction between the ED-RMS
+      system and its external entities (users).</p>
+
+    <div class="diagram-box">
+      <pre class="mermaid">
+%%{init: {'theme': 'default', 'themeVariables': { 'fontSize': '16px'}, 'flowchart': { 'nodeSpacing': 80, 'rankSpacing': 80}}}%%
+flowchart LR
+    DONOR(("Donor"))
+    RECIP(("Recipient"))
+    CLIN(("Clinician"))
+    ADMIN(("Admin"))
+
+    SYS(("ED-RMS System 0.0"))
+
+    DONOR -->|Registration Details, Medical Profile, Consent Form| SYS
+    SYS -->|Status Updates, Account Confirmation| DONOR
+
+    RECIP -->|Registration Details, Donor Preferences, Diagnosis| SYS
+    SYS -->|Ranked Match Results, Match Explanations| RECIP
+
+    CLIN -->|Match Generation Request, Match Approval/Rejection, Donor Approval| SYS
+    SYS -->|Patient Lists, Match Score Breakdowns| CLIN
+
+    ADMIN -->|User Management actions, MCDA Config Weights| SYS
+    SYS -->|Audit Logs, System Statistics| ADMIN
+
+    classDef entity fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
+    classDef process fill:#fff3e0,stroke:#f57c00,stroke-width:3px,shape:circle;
+    class DONOR,RECIP,CLIN,ADMIN entity;
+    class SYS process;
+</pre>
+    </div>
+    <p class="caption">Figure 3: Context Diagram (Level 0 DFD)</p>
+  </div>
+
+  <!-- ============ COMPONENT 4.8.1 ============ -->
+  <div class="page page-break">
+    <h3>4.8.1 The Level One DFD</h3>
+    <p>This diagram explodes the Context Diagram (0.0) into its major functional sub-systems and introduces the internal
+      Data Stores (Databases).</p>
+
+    <div class="diagram-box">
+      <pre class="mermaid">
+%%{init: {'theme': 'default', 'themeVariables': { 'fontSize': '15px'}, 'flowchart': { 'nodeSpacing': 60, 'rankSpacing': 70}}}%%
+flowchart TD
+    %% External Entities
+    DONOR(("Donor"))
+    RECIP(("Recipient"))
+    CLIN(("Clinician"))
+    ADMIN(("Admin"))
+
+    %% Processes
+    P1(("1.0 Manage Users and Access"))
+    P2(("2.0 Process Profiles and Consent"))
+    P3(("3.0 Generate and Score Matches"))
+    P4(("4.0 Generate Reports and Audits"))
+
+    %% Data Stores
+    D1[(D1: User DB)]
+    D2[(D2: Profile DB)]
+    D3[(D3: Match DB)]
+    D4[(D4: Config/Audit DB)]
+
+    %% Data Flows (External -> Processes)
+    DONOR -->|Credentials| P1
+    RECIP -->|Credentials| P1
+    CLIN -->|Credentials| P1
+    ADMIN -->|Config Data| P1
+    
+    DONOR -->|Phenotypic Data, Consent| P2
+    RECIP -->|Preferences| P2
+    CLIN -->|Review Request| P2
+
+    CLIN -->|Triggers matching| P3
+    ADMIN -->|Requests stats| P4
+
+    %% Data Flows (Processes -> Data Stores)
+    P1 <-->|Read/Write User Data| D1
+    P2 <-->|Store/Retrieve Profiles| D2
+    P3 <-->|Save Match Results| D3
+    P1 -->|Log Auth Action| D4
+    P2 -->|Log Profile Update| D4
+    P3 -->|Log Match Generation| D4
+
+    %% Data Flows (Processes & Stores internally)
+    D2 -->|Fetch Donor Pool and Recipient Prefs| P3
+    D4 -->|Fetch MCDA Weights| P3
+    
+    %% Flows out to entities
+    P1 -->|Auth Tokens| DONOR
+    P2 -->|Profile Status| RECIP
+    P3 -->|Scored Matches| CLIN
+    P3 -->|Approved Matches| RECIP
+    D4 -->|Logs and Stats| P4
+    P4 -->|Dashboard Reports| ADMIN
+
+    classDef entity fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
+    classDef process fill:#fff3e0,stroke:#f57c00,stroke-width:2px,shape:circle;
+    classDef ds fill:#e8f5e9,stroke:#388e3c,stroke-width:2px;
+    class DONOR,RECIP,CLIN,ADMIN entity;
+    class P1,P2,P3,P4 process;
+    class D1,D2,D3,D4 ds;
+</pre>
+    </div>
+    <p class="caption">Figure 4: Level 1 Data Flow Diagram (Main System Processes)</p>
+  </div>
+
+  <!-- ============ COMPONENT 4.10 ============ -->
+  <div class="page page-break">
+    <h2>4.10 Entity Relationship Diagrams (For Structured)</h2>
+    <p>The ERD maps out the logical data structure required to support the data flows identified in the DFDs. It shows
+      the main tables, foreign keys, and their mapping to each other.</p>
+
+    <div class="diagram-box">
+      <pre class="mermaid">
+%%{init: {'theme': 'default', 'themeVariables': { 'fontSize': '16px'}}}%%
+erDiagram
+    USERS ||--o| DONOR_PROFILES : "1 to 0..1 has a"
+    USERS ||--o| RECIPIENT_PROFILES : "1 to 0..1 has a"
+    USERS ||--o{ CONSENTS : "1 to N grants"
+    USERS ||--o{ AUDIT_LOGS : "1 to N triggers"
+    
+    DONOR_PROFILES ||--o{ MATCHES : "1 to N appears in"
+    RECIPIENT_PROFILES ||--o{ MATCHES : "1 to N generated for"
+    USERS ||--o{ MATCHES : "1 to N reviews Clinician"
+    RECIPIENT_PROFILES }o--|{ USERS : "N to 1 assigned to Clinician"
+
+    USERS {
+        int id
+        string name
+        string email
+        string role
+        boolean is_active
+    }
+
+    DONOR_PROFILES {
+        int id
+        int user_id
+        string donor_code
+        string status
+        string blood_type
+        string genotype
+        decimal bmi
+        string ethnicity
+        string education_level
+        string availability_status
+    }
+
+    RECIPIENT_PROFILES {
+        int id
+        int user_id
+        string recipient_code
+        string status
+        string diagnosis
+        string preferred_blood_type
+        string preferred_genotype
+        int preferred_age_min
+        int preferred_age_max
+        int clinician_id
+    }
+
+    MATCHES {
+        int id
+        int recipient_id
+        int donor_id
+        decimal match_score
+        string score_breakdown
+        boolean hard_filter_passed
+        string status
+        int reviewed_by
+        string review_notes
+    }
+
+    CONSENTS {
+        int id
+        int user_id
+        string consent_type
+        string status
+    }
+
+    AUDIT_LOGS {
+        int id
+        int user_id
+        string action
+        string record_changes
+    }
+</pre>
+    </div>
+    <p class="caption">Figure 5: Entity-Relationship Diagram (ERD)</p>
+  </div>
+
+  <!-- Use ES Module for Mermaid 11+ -->
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#fcfcfc',
+        primaryTextColor: '#111',
+        primaryBorderColor: '#2c5f9e',
+        lineColor: '#2c5f9e',
+        secondaryColor: '#f1f8ff',
+        tertiaryColor: '#fff',
+        fontSize: '16px'
+      },
+      securityLevel: 'loose'
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,377 @@
+/* ══════════════════════════════════════════════
+   Clinician Dashboard — Cyan Clinical Glass v2.0
+   ══════════════════════════════════════════════ */
+
+/* ── Particles Canvas ── */
+.clinician-particles {
+    position: fixed;
+    top: 0; left: var(--sidebar-width); right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.clinician-page-custom-bg { position: relative; }
+
+/* ── Avatar Background ── */
+.clin-avatar-bg {
+    position: fixed;
+    top: 0; left: var(--sidebar-width); right: 0; bottom: 0;
+    z-index: 0;
+    overflow: hidden;
+}
+.clin-avatar-bg-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(60px) saturate(1.3) brightness(0.7);
+    transform: scale(1.15);
+    opacity: 0.15;
+}
+.clin-avatar-bg-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, var(--bg-primary) 0%, transparent 40%, var(--bg-primary) 100%);
+}
+
+/* ── Welcome Banner ── */
+.clin-welcome-banner {
+    position: relative;
+    z-index: 1;
+    background: var(--bg-card);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-xl);
+    padding: 2rem 2.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    overflow: hidden;
+    box-shadow: var(--glass-shadow);
+    animation: fadeInUp 0.5s var(--ease-out) both;
+}
+
+.clin-welcome-banner::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--role-clinician), #0ea5e9, var(--role-clinician));
+}
+
+.clin-welcome-user {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+/* ── Avatar ── */
+.clin-avatar-container {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 3px var(--border), 0 4px 15px rgba(0,0,0,0.15);
+    transition: all 0.3s var(--ease-out);
+}
+.clin-avatar-container:hover {
+    box-shadow: 0 0 0 3px var(--role-clinician), 0 4px 20px rgba(34,211,238,0.3);
+    transform: scale(1.05);
+}
+.clin-avatar-img { width: 100%; height: 100%; object-fit: cover; }
+.clin-avatar-placeholder {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--role-clinician), #0ea5e9);
+    color: #fff;
+    font-weight: 800;
+    font-size: 1.2rem;
+}
+.clin-avatar-edit-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    border-radius: 50%;
+}
+.clin-avatar-container:hover .clin-avatar-edit-overlay { opacity: 1; }
+.clin-avatar-loader {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-input);
+}
+
+/* ── Welcome Text ── */
+.clin-welcome-text { display: flex; flex-direction: column; gap: 0.15rem; }
+.clin-greeting { font-size: 0.85rem; color: var(--text-secondary); font-weight: 400; }
+.clin-doctor-name {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.03em;
+}
+.clin-welcome-sub { font-size: 0.85rem; color: var(--text-muted); }
+
+/* ── Pulse Ring Visual ── */
+.clin-welcome-visual { flex-shrink: 0; }
+.clin-pulse-ring { width: 110px; height: 110px; }
+.clin-ring-pulse { animation: ringPulse 3s ease-in-out infinite; transform-origin: center; }
+@keyframes ringPulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.08); opacity: 1; }
+}
+
+/* ── Stat Cards ── */
+.clin-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.clin-stat-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--glass-shadow);
+    animation: fadeInUp 0.5s var(--ease-out) both;
+    transition: all 0.35s var(--ease-out);
+}
+
+.clin-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+    border-color: var(--card-accent, var(--border-hover));
+}
+
+.clin-stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.3s var(--ease-spring);
+}
+.clin-stat-card:hover .clin-stat-icon { transform: scale(1.1) rotate(-3deg); }
+
+.clin-stat-body { display: flex; flex-direction: column; flex: 1; }
+.clin-stat-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    font-weight: 700;
+}
+.clin-stat-number {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    font-family: 'JetBrains Mono', monospace;
+}
+.clin-stat-trend {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.clin-stat-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--border);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    overflow: hidden;
+}
+.clin-stat-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    width: 0;
+    animation: barGrow 1s var(--ease-out) forwards;
+}
+@keyframes barGrow { to { width: var(--target-width, 50%); } }
+
+/* ── Section ── */
+.clin-section {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 1.5rem;
+    animation: fadeInUp 0.5s var(--ease-out) 0.15s both;
+}
+.clin-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 1rem;
+}
+.clin-section-header h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+}
+.clin-section-sub {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}
+
+/* ── Action Cards ── */
+.clin-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.clin-action-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: var(--bg-card);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: var(--text-primary);
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--glass-shadow);
+    transition: all 0.35s var(--ease-out);
+    animation: fadeInUp 0.5s var(--ease-out) both;
+}
+
+.clin-action-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+    border-color: var(--border-hover);
+}
+
+.clin-action-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.3s var(--ease-spring);
+}
+.clin-action-card:hover .clin-action-icon { transform: scale(1.1); }
+
+.clin-action-body { flex: 1; }
+.clin-action-body h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0 0 0.2rem;
+    letter-spacing: -0.01em;
+}
+.clin-action-body p {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.4;
+}
+
+.clin-action-arrow {
+    transition: transform 0.3s var(--ease-out);
+    opacity: 0.5;
+}
+.clin-action-card:hover .clin-action-arrow {
+    transform: translateX(4px);
+    opacity: 1;
+}
+
+.clin-action-badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: linear-gradient(135deg, #ef4444, #f87171);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--radius-full);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* ── Overview Cards ── */
+.clin-overview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.clin-overview-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    box-shadow: var(--glass-shadow);
+    transition: all 0.3s var(--ease-out);
+}
+.clin-overview-card:hover {
+    transform: translateY(-2px);
+}
+
+.clin-overview-card h4 {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.01em;
+}
+
+.clin-pipeline { display: flex; flex-direction: column; gap: 0.5rem; }
+.clin-pipeline-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.clin-pipeline-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 6px currentColor;
+}
+.clin-pipeline-label {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    flex: 1;
+}
+.clin-pipeline-count {
+    font-weight: 800;
+    font-size: 0.88rem;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.clin-mini-chart {
+    width: 100%;
+    height: 40px;
+    margin-top: 0.75rem;
+    opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+    .clin-welcome-banner { flex-direction: column; padding: 1.5rem; }
+    .clin-overview-grid { grid-template-columns: 1fr; }
+    .clin-stats-grid { grid-template-columns: 1fr 1fr; }
+}

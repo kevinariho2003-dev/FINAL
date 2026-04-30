@@ -1,0 +1,26 @@
+/* ══════════════════════════════════════════════
+   Donor Profile — Clinical Glass v2.0
+   ══════════════════════════════════════════════ */
+
+.donor-profile-page .card {
+    border-radius: var(--radius-xl);
+}
+
+.donor-profile-page .form-row {
+    gap: 1.25rem;
+}
+
+.donor-profile-page h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.donor-profile-page .form-group {
+    margin-bottom: 1.25rem;
+}

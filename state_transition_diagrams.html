@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>State Transition Diagrams - EDRMS</title>
+<style>
+  @page { size: A4 portrait; margin: 12mm; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 10px 20px;
+    gap: 18px;
+  }
+  svg text {
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+  .diagram-container {
+    width: 680px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================== -->
+<!-- DIAGRAM 1: Donor Profile STD   -->
+<!-- ============================== -->
+<div class="diagram-container">
+<svg viewBox="0 0 680 420" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="ah1" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#3a3a7c"/>
+    </marker>
+    <marker id="ah1g" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#2d7d46"/>
+    </marker>
+    <marker id="ah1r" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#a03030"/>
+    </marker>
+    <marker id="ah1o" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#b07020"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="340" y="22" text-anchor="middle" font-size="15" font-weight="bold" font-style="italic" fill="#1a1a3e">
+    Figure 3: Donor Profile – State Transition Diagram
+  </text>
+
+  <!-- Initial state (filled circle) -->
+  <circle cx="70" cy="80" r="10" fill="#3a3a7c" stroke="#3a3a7c" stroke-width="1.5"/>
+  <!-- Arrow: initial → Pending -->
+  <line x1="80" y1="80" x2="120" y2="80" stroke="#3a3a7c" stroke-width="1.5" marker-end="url(#ah1)"/>
+  <text x="100" y="72" text-anchor="middle" font-size="9" fill="#555">Register</text>
+
+  <!-- PENDING State -->
+  <rect x="128" y="58" width="140" height="44" rx="22" ry="22" fill="#fff3cd" stroke="#b07020" stroke-width="1.8"/>
+  <text x="198" y="84" text-anchor="middle" font-size="13" font-weight="600" fill="#7a5000">Pending</text>
+
+  <!-- Arrow: Pending → Approved -->
+  <line x1="268" y1="80" x2="370" y2="80" stroke="#2d7d46" stroke-width="1.5" marker-end="url(#ah1g)"/>
+  <text x="319" y="72" text-anchor="middle" font-size="9" fill="#2d7d46">Clinician Approves</text>
+
+  <!-- APPROVED State -->
+  <rect x="378" y="58" width="140" height="44" rx="22" ry="22" fill="#d4edda" stroke="#2d7d46" stroke-width="1.8"/>
+  <text x="448" y="84" text-anchor="middle" font-size="13" font-weight="600" fill="#155724">Approved</text>
+
+  <!-- Arrow: Approved → Suspended (down) -->
+  <line x1="448" y1="102" x2="448" y2="188" stroke="#b07020" stroke-width="1.5" marker-end="url(#ah1o)"/>
+  <text x="460" y="150" text-anchor="start" font-size="9" fill="#b07020">Issue Detected /</text>
+  <text x="460" y="161" text-anchor="start" font-size="9" fill="#b07020">Admin Suspends</text>
+
+  <!-- SUSPENDED State -->
+  <rect x="378" y="196" width="140" height="44" rx="22" ry="22" fill="#fde2cc" stroke="#b07020" stroke-width="1.8"/>
+  <text x="448" y="222" text-anchor="middle" font-size="13" font-weight="600" fill="#8a4b08">Suspended</text>
+
+  <!-- Arrow: Suspended → Approved (loop back up-left) -->
+  <path d="M 378,210 L 340,210 L 340,100 L 378,100" fill="none" stroke="#2d7d46" stroke-width="1.5" marker-end="url(#ah1g)"/>
+  <text x="328" y="160" text-anchor="end" font-size="9" fill="#2d7d46">Issue Resolved /</text>
+  <text x="328" y="171" text-anchor="end" font-size="9" fill="#2d7d46">Reinstated</text>
+
+  <!-- Arrow: Suspended → Inactive (down) -->
+  <line x1="448" y1="240" x2="448" y2="318" stroke="#a03030" stroke-width="1.5" marker-end="url(#ah1r)"/>
+  <text x="460" y="280" text-anchor="start" font-size="9" fill="#a03030">Account</text>
+  <text x="460" y="291" text-anchor="start" font-size="9" fill="#a03030">Deactivated</text>
+
+  <!-- Arrow: Approved → Inactive (diagonal) -->
+  <path d="M 518,92 L 570,92 L 570,330 L 518,330" fill="none" stroke="#a03030" stroke-width="1.5" marker-end="url(#ah1r)"/>
+  <text x="582" y="210" text-anchor="start" font-size="9" fill="#a03030">Donor</text>
+  <text x="582" y="221" text-anchor="start" font-size="9" fill="#a03030">Withdraws</text>
+
+  <!-- INACTIVE State -->
+  <rect x="378" y="326" width="140" height="44" rx="22" ry="22" fill="#f5c6cb" stroke="#a03030" stroke-width="1.8"/>
+  <text x="448" y="352" text-anchor="middle" font-size="13" font-weight="600" fill="#721c24">Inactive</text>
+
+  <!-- Final state marker on Inactive -->
+  <circle cx="448" cy="395" r="10" fill="#fff" stroke="#3a3a7c" stroke-width="1.8"/>
+  <circle cx="448" cy="395" r="6" fill="#3a3a7c"/>
+  <line x1="448" y1="370" x2="448" y2="385" stroke="#3a3a7c" stroke-width="1.5" marker-end="url(#ah1)"/>
+
+  <!-- Arrow: Pending → Inactive (from bottom of Pending, down) -->
+  <path d="M 198,102 L 198,348 L 378,348" fill="none" stroke="#a03030" stroke-width="1.5" marker-end="url(#ah1r)"/>
+  <text x="160" y="230" text-anchor="end" font-size="9" fill="#a03030">Registration</text>
+  <text x="160" y="241" text-anchor="end" font-size="9" fill="#a03030">Cancelled</text>
+
+</svg>
+</div>
+
+<!-- ============================== -->
+<!-- DIAGRAM 2: Match Result STD    -->
+<!-- ============================== -->
+<div class="diagram-container">
+<svg viewBox="0 0 680 460" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="ah2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#3a3a7c"/>
+    </marker>
+    <marker id="ah2g" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#2d7d46"/>
+    </marker>
+    <marker id="ah2r" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#a03030"/>
+    </marker>
+    <marker id="ah2b" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#0d47a1"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="340" y="22" text-anchor="middle" font-size="15" font-weight="bold" font-style="italic" fill="#1a1a3e">
+    Figure 4: Match Result – State Transition Diagram
+  </text>
+
+  <!-- Initial state (filled circle) -->
+  <circle cx="340" cy="60" r="10" fill="#3a3a7c" stroke="#3a3a7c" stroke-width="1.5"/>
+  <!-- Arrow: initial → Proposed -->
+  <line x1="340" y1="70" x2="340" y2="100" stroke="#3a3a7c" stroke-width="1.5" marker-end="url(#ah2)"/>
+  <text x="360" y="88" text-anchor="start" font-size="9" fill="#555">Match Generated</text>
+
+  <!-- PROPOSED State -->
+  <rect x="270" y="108" width="140" height="44" rx="22" ry="22" fill="#e3e0f5" stroke="#3a3a7c" stroke-width="1.8"/>
+  <text x="340" y="134" text-anchor="middle" font-size="13" font-weight="600" fill="#2a2a6c">Proposed</text>
+
+  <!-- Arrow: Proposed → Clinician Review -->
+  <line x1="340" y1="152" x2="340" y2="198" stroke="#0d47a1" stroke-width="1.5" marker-end="url(#ah2b)"/>
+  <text x="352" y="178" text-anchor="start" font-size="9" fill="#0d47a1">Submitted for Review</text>
+
+  <!-- CLINICIAN REVIEW State -->
+  <rect x="253" y="206" width="174" height="44" rx="22" ry="22" fill="#bbdefb" stroke="#0d47a1" stroke-width="1.8"/>
+  <text x="340" y="226" text-anchor="middle" font-size="12" font-weight="600" fill="#0d47a1">Clinician</text>
+  <text x="340" y="240" text-anchor="middle" font-size="12" font-weight="600" fill="#0d47a1">Review</text>
+
+  <!-- Arrow: Clinician Review → Approved (left-down) -->
+  <path d="M 280,250 L 160,290" fill="none" stroke="#2d7d46" stroke-width="1.5" marker-end="url(#ah2g)"/>
+  <text x="200" y="260" text-anchor="middle" font-size="9" fill="#2d7d46">Clinician Approves</text>
+
+  <!-- Arrow: Clinician Review → Rejected (right-down) -->
+  <path d="M 400,250 L 520,290" fill="none" stroke="#a03030" stroke-width="1.5" marker-end="url(#ah2r)"/>
+  <text x="480" y="260" text-anchor="middle" font-size="9" fill="#a03030">Clinician Rejects</text>
+
+  <!-- APPROVED State -->
+  <rect x="70" y="296" width="140" height="44" rx="22" ry="22" fill="#d4edda" stroke="#2d7d46" stroke-width="1.8"/>
+  <text x="140" y="322" text-anchor="middle" font-size="13" font-weight="600" fill="#155724">Approved</text>
+
+  <!-- REJECTED State -->
+  <rect x="470" y="296" width="140" height="44" rx="22" ry="22" fill="#f5c6cb" stroke="#a03030" stroke-width="1.8"/>
+  <text x="540" y="322" text-anchor="middle" font-size="13" font-weight="600" fill="#721c24">Rejected</text>
+
+  <!-- Arrow: Approved → Completed (down) -->
+  <line x1="140" y1="340" x2="140" y2="388" stroke="#2d7d46" stroke-width="1.5" marker-end="url(#ah2g)"/>
+  <text x="152" y="368" text-anchor="start" font-size="9" fill="#2d7d46">Donation Process</text>
+  <text x="152" y="379" text-anchor="start" font-size="9" fill="#2d7d46">Finalized</text>
+
+  <!-- COMPLETED State -->
+  <rect x="70" y="396" width="140" height="44" rx="22" ry="22" fill="#c8e6c9" stroke="#2d7d46" stroke-width="1.8"/>
+  <text x="140" y="422" text-anchor="middle" font-size="13" font-weight="600" fill="#1b5e20">Completed</text>
+
+  <!-- Final state on Completed -->
+  <circle cx="280" cy="418" r="10" fill="#fff" stroke="#3a3a7c" stroke-width="1.8"/>
+  <circle cx="280" cy="418" r="6" fill="#3a3a7c"/>
+  <line x1="210" y1="418" x2="270" y2="418" stroke="#3a3a7c" stroke-width="1.5" marker-end="url(#ah2)"/>
+
+  <!-- Final state on Rejected -->
+  <circle cx="540" cy="368" r="10" fill="#fff" stroke="#3a3a7c" stroke-width="1.8"/>
+  <circle cx="540" cy="368" r="6" fill="#3a3a7c"/>
+  <line x1="540" y1="340" x2="540" y2="358" stroke="#3a3a7c" stroke-width="1.5" marker-end="url(#ah2)"/>
+
+</svg>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,423 @@
+/* ══════════════════════════════════════════════
+   Admin Dashboard — Amber Authority Glass v2.0
+   ══════════════════════════════════════════════ */
+
+.admin-page-custom-bg { position: relative; }
+
+/* ── Admin Stat Cards ── */
+.admin-stat-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--glass-shadow);
+    transition: all 0.35s var(--ease-out);
+    animation: fadeInUp 0.5s var(--ease-out) both;
+    text-decoration: none;
+    color: var(--text-primary);
+}
+
+.admin-stat-card--clickable:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+    border-color: var(--stat-accent, var(--border-hover));
+}
+
+.admin-stat-card--all-clear {
+    opacity: 0.85;
+}
+
+.admin-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--stat-accent, var(--accent)), transparent);
+    opacity: 0.6;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.stat-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    flex-shrink: 0;
+    transition: transform 0.3s var(--ease-spring);
+}
+.admin-stat-card:hover .stat-icon-box { transform: scale(1.1) rotate(-3deg); }
+
+.stat-content { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.stat-content .stat-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    font-weight: 700;
+    margin-bottom: 0.15rem;
+}
+.stat-content .stat-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-family: 'JetBrains Mono', monospace;
+}
+.stat-content .stat-trend {
+    font-size: 0.72rem;
+    font-weight: 500;
+    margin-top: 0.1rem;
+}
+.stat-trend.up { color: var(--success); }
+.stat-trend.neutral { color: var(--text-muted); }
+
+.pending-pulse-badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: linear-gradient(135deg, var(--warning), #fbbf24);
+    color: #000;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 0.15rem 0.55rem;
+    border-radius: var(--radius-full);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* ── Analytics Row ── */
+.admin-analytics-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.analytics-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    box-shadow: var(--glass-shadow);
+    transition: all 0.3s var(--ease-out);
+    animation: fadeInUp 0.5s var(--ease-out) 0.15s both;
+}
+.analytics-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.1);
+}
+
+.analytics-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.85rem;
+}
+.analytics-card-header h3 {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+}
+
+.analytics-badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-full);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.analytics-badge.up { background: var(--success-bg); color: var(--success); }
+.analytics-badge.neutral { background: var(--bg-input); color: var(--text-muted); }
+
+/* ── Sparkline ── */
+.sparkline-chart {
+    width: 100%;
+    height: 55px;
+    margin-bottom: 0.5rem;
+}
+.sparkline-area { opacity: 0.6; }
+.sparkline-line { stroke-linecap: round; }
+.sparkline-dot { animation: pulse 2s ease-in-out infinite; }
+.sparkline-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+.sparkline-legend {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+.sparkline-legend i {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 0.3rem;
+    vertical-align: middle;
+}
+
+/* ── Gauge ── */
+.gauge-container { text-align: center; }
+.gauge-svg {
+    width: 140px;
+    height: 80px;
+    margin: 0 auto;
+}
+.gauge-fill {
+    transition: stroke-dashoffset 1.5s var(--ease-out);
+}
+.gauge-svg text {
+    fill: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+}
+.gauge-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-top: 0.25rem;
+}
+
+/* ── Health Indicators ── */
+.admin-health-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.health-item {
+    background: var(--bg-card);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+    box-shadow: var(--glass-shadow);
+    transition: all 0.3s var(--ease-out);
+}
+.health-item:hover { transform: translateY(-1px); }
+
+.health-top {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+.health-icon { font-size: 0.9rem; }
+.health-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.health-bar-track {
+    height: 4px;
+    background: var(--border);
+    border-radius: 100px;
+    overflow: hidden;
+    margin-bottom: 0.35rem;
+}
+.health-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--success), var(--role-clinician));
+    border-radius: 100px;
+    width: 0;
+    animation: barGrow 1.2s var(--ease-out) forwards;
+}
+@keyframes barGrow { to { width: var(--target-width, 100%); } }
+
+.health-status {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* ── Pending Donors ── */
+.pending-donors-section {
+    margin-bottom: 1.5rem;
+}
+
+.pending-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    margin-left: 0.5rem;
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, var(--warning), #fbbf24);
+    color: #000;
+    font-size: 0.7rem;
+    font-weight: 800;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.pending-donors-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.pending-donor-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    transition: all 0.3s var(--ease-out);
+    animation: fadeInUp 0.4s var(--ease-out) both;
+    background: var(--bg-card);
+    backdrop-filter: blur(var(--glass-blur));
+}
+.pending-donor-card.expanded { border-color: var(--border-hover); }
+
+.pending-donor-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.pending-donor-header:hover { background: var(--bg-input); }
+
+.pending-donor-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--role-donor), #f9a8d4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.pending-donor-info { flex: 1; min-width: 0; }
+.pending-donor-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+.pending-donor-code {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.pending-donor-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+.pending-donor-date {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.pending-donor-chevron {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    transition: transform 0.3s;
+    flex-shrink: 0;
+}
+.pending-donor-chevron.open { transform: rotate(180deg); }
+
+.pending-donor-details {
+    padding: 0 1rem 1rem;
+    animation: fadeInUp 0.3s var(--ease-out) both;
+}
+
+.pending-donor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.pending-detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+.pending-detail-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    font-weight: 700;
+}
+.pending-detail-value {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.pending-donor-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+}
+
+/* ── Role Distribution ── */
+.role-distribution {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.role-bar-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.role-bar-label {
+    width: 80px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: capitalize;
+}
+.role-bar-track {
+    flex: 1;
+    height: 28px;
+    background: var(--bg-input);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+.role-bar-fill {
+    height: 100%;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    padding-left: 0.65rem;
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    transition: width 1s var(--ease-out);
+}
+
+@media (max-width: 768px) {
+    .admin-analytics-row { grid-template-columns: 1fr; }
+    .admin-health-row { grid-template-columns: 1fr 1fr; }
+    .pending-donor-grid { grid-template-columns: 1fr 1fr; }
+}

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>System Flow Chart</title>
+<style>
+  @page { size: A4 portrait; margin: 15mm; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #fff;
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+  }
+  svg {
+    width: 700px;
+    height: 980px;
+  }
+  .box rect {
+    fill: #e8e0f0;
+    stroke: #3a3a7c;
+    stroke-width: 1.5;
+    rx: 4;
+    ry: 4;
+  }
+  .diamond polygon {
+    fill: #ede6f5;
+    stroke: #3a3a7c;
+    stroke-width: 1.5;
+  }
+  .oval ellipse {
+    fill: #ede6f5;
+    stroke: #3a3a7c;
+    stroke-width: 1.5;
+  }
+  text {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    fill: #1a1a3e;
+    font-size: 12px;
+    text-anchor: middle;
+    dominant-baseline: middle;
+  }
+  text.label {
+    font-size: 11px;
+    fill: #3a3a7c;
+  }
+  .arrow {
+    stroke: #3a3a7c;
+    stroke-width: 1.5;
+    fill: none;
+    marker-end: url(#arrowhead);
+  }
+  .caption {
+    font-size: 13px;
+    font-weight: bold;
+    font-style: italic;
+    fill: #1a1a3e;
+  }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 700 980" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#3a3a7c"/>
+    </marker>
+  </defs>
+
+  <!-- START -->
+  <g class="oval">
+    <ellipse cx="350" cy="30" rx="50" ry="20"/>
+    <text x="350" y="30">Start</text>
+  </g>
+
+  <!-- Arrow: Start → User Registered? -->
+  <line class="arrow" x1="350" y1="50" x2="350" y2="75"/>
+
+  <!-- User Registered? -->
+  <g class="diamond">
+    <polygon points="350,75 440,110 350,145 260,110"/>
+    <text x="350" y="107">User</text>
+    <text x="350" y="121">Registered?</text>
+  </g>
+
+  <!-- Arrow: No → Register -->
+  <line class="arrow" x1="260" y1="110" x2="185" y2="110"/>
+  <line class="arrow" x1="185" y1="110" x2="185" y2="150"/>
+  <text class="label" x="220" y="103">No</text>
+
+  <!-- Arrow: Yes → Authenticate -->
+  <line class="arrow" x1="440" y1="110" x2="515" y2="110"/>
+  <line class="arrow" x1="515" y1="110" x2="515" y2="150"/>
+  <text class="label" x="480" y="103">Yes</text>
+
+  <!-- Register User Account -->
+  <g class="box">
+    <rect x="95" y="150" width="180" height="38"/>
+    <text x="185" y="169">Register User Account</text>
+  </g>
+
+  <!-- Authenticate -->
+  <g class="box">
+    <rect x="425" y="150" width="180" height="38"/>
+    <text x="515" y="169">Authenticate</text>
+  </g>
+
+  <!-- Arrows converging to User Role? -->
+  <line class="arrow" x1="185" y1="188" x2="185" y2="218"/>
+  <line x1="185" y1="218" x2="350" y2="218" stroke="#3a3a7c" stroke-width="1.5"/>
+  <line class="arrow" x1="515" y1="188" x2="515" y2="218"/>
+  <line x1="515" y1="218" x2="350" y2="218" stroke="#3a3a7c" stroke-width="1.5"/>
+  <line class="arrow" x1="350" y1="218" x2="350" y2="238"/>
+
+  <!-- User Role? -->
+  <g class="diamond">
+    <polygon points="350,238 430,270 350,302 270,270"/>
+    <text x="350" y="267">User Role?</text>
+  </g>
+
+  <!-- === DONOR PATH (Left) === -->
+  <line class="arrow" x1="270" y1="270" x2="150" y2="270"/>
+  <line class="arrow" x1="150" y1="270" x2="150" y2="310"/>
+  <text class="label" x="210" y="263">Donor</text>
+
+  <!-- Access Donor Dashboard -->
+  <g class="box">
+    <rect x="55" y="310" width="190" height="38"/>
+    <text x="150" y="329">Access Donor Dashboard</text>
+  </g>
+
+  <!-- Arrow -->
+  <line class="arrow" x1="150" y1="348" x2="150" y2="375"/>
+
+  <!-- Submit Medical Profile and Consent -->
+  <g class="box">
+    <rect x="40" y="375" width="220" height="44"/>
+    <text x="150" y="392">Submit Medical Profile</text>
+    <text x="150" y="407">and Consent</text>
+  </g>
+
+  <!-- Arrow -->
+  <line class="arrow" x1="150" y1="419" x2="150" y2="445"/>
+
+  <!-- Await Clinician Approval -->
+  <g class="box">
+    <rect x="40" y="445" width="220" height="38"/>
+    <text x="150" y="464">Await Clinician Approval</text>
+  </g>
+
+  <!-- === RECIPIENT PATH (Right) === -->
+  <line class="arrow" x1="430" y1="270" x2="550" y2="270"/>
+  <line class="arrow" x1="550" y1="270" x2="550" y2="310"/>
+  <text class="label" x="490" y="263">Recipient</text>
+
+  <!-- Access Recipient Dashboard -->
+  <g class="box">
+    <rect x="450" y="310" width="200" height="44"/>
+    <text x="550" y="327">Access Recipient</text>
+    <text x="550" y="342">Dashboard</text>
+  </g>
+
+  <!-- Arrow -->
+  <line class="arrow" x1="550" y1="354" x2="550" y2="380"/>
+
+  <!-- Submit Preferences and Diagnosis -->
+  <g class="box">
+    <rect x="440" y="380" width="220" height="44"/>
+    <text x="550" y="397">Submit Preferences and</text>
+    <text x="550" y="412">Diagnosis</text>
+  </g>
+
+  <!-- Arrow -->
+  <line class="arrow" x1="550" y1="424" x2="550" y2="450"/>
+
+  <!-- Request Match -->
+  <g class="box">
+    <rect x="460" y="450" width="180" height="38"/>
+    <text x="550" y="469">Request Match</text>
+  </g>
+
+  <!-- === CLINICIAN PATH (Center) === -->
+  <line class="arrow" x1="350" y1="302" x2="350" y2="510"/>
+  <text class="label" x="370" y="316">Clinician</text>
+
+  <!-- Donor → Clinician Dashboard (arrow from Await Clinician Approval) -->
+  <polyline class="arrow" points="150,483 150,530 270,530" stroke="#3a3a7c" stroke-width="1.5" fill="none" stroke-dasharray="4,3"/>
+
+  <!-- Recipient → Clinician Dashboard (arrow from Request Match) -->
+  <polyline class="arrow" points="550,488 550,530 430,530" stroke="#3a3a7c" stroke-width="1.5" fill="none" stroke-dasharray="4,3"/>
+
+  <!-- Access Clinician Dashboard -->
+  <g class="box">
+    <rect x="250" y="510" width="200" height="44"/>
+    <text x="350" y="527">Access Clinician</text>
+    <text x="350" y="542">Dashboard</text>
+  </g>
+
+  <!-- Arrow -->
+  <line class="arrow" x1="350" y1="554" x2="350" y2="580"/>
+
+  <!-- Execute Matching Engine -->
+  <g class="box">
+    <rect x="240" y="580" width="220" height="38"/>
+    <text x="350" y="599">Execute Matching Engine</text>
+  </g>
+
+  <!-- Arrow -->
+  <line class="arrow" x1="350" y1="618" x2="350" y2="644"/>
+
+  <!-- Apply Hard Filters and MCDA Algorithm -->
+  <g class="box">
+    <rect x="225" y="644" width="250" height="44"/>
+    <text x="350" y="661">Apply Hard Filters and</text>
+    <text x="350" y="676">MCDA Algorithm</text>
+  </g>
+
+  <!-- Arrow -->
+  <line class="arrow" x1="350" y1="688" x2="350" y2="714"/>
+
+  <!-- Generate Ranked Matches -->
+  <g class="box">
+    <rect x="240" y="714" width="220" height="38"/>
+    <text x="350" y="733">Generate Ranked Matches</text>
+  </g>
+
+  <!-- Arrow -->
+  <line class="arrow" x1="350" y1="752" x2="350" y2="778"/>
+
+  <!-- Clinician Review Decision -->
+  <g class="diamond">
+    <polygon points="350,778 440,810 350,842 260,810"/>
+    <text x="350" y="807">Clinician</text>
+    <text x="350" y="821">Review</text>
+  </g>
+
+  <!-- Approved → Notify -->
+  <line class="arrow" x1="260" y1="810" x2="175" y2="810"/>
+  <line class="arrow" x1="175" y1="810" x2="175" y2="858"/>
+  <text class="label" x="215" y="800">Approved</text>
+
+  <!-- Notify Recipient and Donor -->
+  <g class="box">
+    <rect x="70" y="858" width="210" height="44"/>
+    <text x="175" y="875">Notify Recipient and</text>
+    <text x="175" y="890">Donor</text>
+  </g>
+
+  <!-- Rejected → Discard Match -->
+  <line class="arrow" x1="440" y1="810" x2="525" y2="810"/>
+  <line class="arrow" x1="525" y1="810" x2="525" y2="858"/>
+  <text class="label" x="485" y="800">Rejected</text>
+
+  <!-- Discard Match -->
+  <g class="box">
+    <rect x="430" y="858" width="190" height="38"/>
+    <text x="525" y="877">Discard Match</text>
+  </g>
+
+  <!-- Arrows converging to End Process -->
+  <line x1="175" y1="902" x2="175" y2="925" stroke="#3a3a7c" stroke-width="1.5"/>
+  <line x1="175" y1="925" x2="350" y2="925" stroke="#3a3a7c" stroke-width="1.5"/>
+  <line x1="525" y1="896" x2="525" y2="925" stroke="#3a3a7c" stroke-width="1.5"/>
+  <line x1="525" y1="925" x2="350" y2="925" stroke="#3a3a7c" stroke-width="1.5"/>
+  <line class="arrow" x1="350" y1="925" x2="350" y2="935"/>
+
+  <!-- End Process -->
+  <g class="oval">
+    <ellipse cx="350" cy="948" rx="60" ry="18"/>
+    <text x="350" y="948">End Process</text>
+  </g>
+
+  <!-- Caption -->
+  <text x="350" y="975" class="caption">Figure 2: System Flow Chart</text>
+
+</svg>
+
+</body>
+</html>

@@ -1,0 +1,261 @@
+/* ══════════════════════════════════════════════
+   Donor Dashboard — Rose-Pink Clinical Glass v2.0
+   ══════════════════════════════════════════════ */
+
+/* ── Page BG ── */
+.donor-page-custom-bg {
+    position: relative;
+}
+
+/* ── Welcome Banner ── */
+.donor-welcome-banner {
+    background: var(--bg-card);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-xl);
+    padding: 2rem 2.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--glass-shadow);
+    animation: fadeInUp 0.5s var(--ease-out) both;
+}
+
+.donor-welcome-banner::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--role-donor), #f9a8d4, var(--role-recipient));
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+.donor-welcome-info h1 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.03em;
+    margin-bottom: 0.3rem;
+}
+
+.donor-welcome-info p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 400;
+}
+
+.donor-welcome-info .badge {
+    margin-left: 0.5rem;
+}
+
+/* ── Progress Ring Section ── */
+.donor-progress-section {
+    background: var(--bg-card);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-xl);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--glass-shadow);
+    animation: fadeInUp 0.5s var(--ease-out) 0.1s both;
+}
+
+.donor-progress-ring-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+    flex-wrap: wrap;
+}
+
+.donor-progress-ring-container {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.donor-progress-ring {
+    filter: drop-shadow(0 0 12px rgba(244, 114, 182, 0.2));
+}
+
+.donor-progress-ring circle:first-child {
+    stroke: var(--border);
+}
+
+.donor-progress-ring .progress-fill {
+    transition: stroke-dashoffset 1.5s var(--ease-out);
+}
+
+.donor-progress-pct {
+    fill: var(--text-primary) !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+
+.donor-progress-label {
+    fill: var(--text-muted) !important;
+}
+
+/* ── Quick Stats ── */
+.donor-quick-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 200px;
+}
+
+.donor-quick-stat {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0.85rem 1rem;
+    transition: all 0.3s var(--ease-out);
+}
+
+.donor-quick-stat:hover {
+    transform: translateY(-1px);
+    border-color: var(--border-hover);
+}
+
+.donor-quick-stat-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+}
+
+.donor-quick-stat-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── Journey Section ── */
+.donor-journey-section {
+    background: var(--bg-card);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-xl);
+    padding: 2rem;
+    box-shadow: var(--glass-shadow);
+    animation: fadeInUp 0.5s var(--ease-out) 0.2s both;
+}
+
+.donor-journey-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1.25rem;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ── Step Cards ── */
+.donor-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 0.5rem;
+    transition: all 0.3s var(--ease-out);
+    position: relative;
+    text-decoration: none;
+    color: var(--text-primary);
+    border: 1px solid transparent;
+}
+
+.donor-step:hover {
+    background: var(--bg-input);
+    border-color: var(--border);
+}
+
+.donor-step-number {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 800;
+    flex-shrink: 0;
+    transition: all 0.3s;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.donor-step.complete .donor-step-number {
+    background: var(--success-bg);
+    color: var(--success);
+    box-shadow: 0 0 12px var(--success-glow);
+}
+
+.donor-step.active .donor-step-number {
+    background: var(--accent-subtle);
+    color: var(--accent);
+    box-shadow: 0 0 12px var(--accent-glow);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.donor-step.pending .donor-step-number {
+    background: var(--bg-input);
+    color: var(--text-muted);
+}
+
+.donor-step-content h4 {
+    font-size: 0.92rem;
+    font-weight: 700;
+    margin: 0 0 0.15rem;
+    letter-spacing: -0.01em;
+}
+
+.donor-step-content p {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.donor-step.complete .donor-step-content h4 {
+    color: var(--success);
+}
+
+.donor-step.pending .donor-step-content h4 {
+    color: var(--text-muted);
+}
+
+/* ── Connector Line ── */
+.donor-step-connector {
+    position: absolute;
+    left: 1.12rem;
+    top: 3rem;
+    width: 2px;
+    height: calc(100% - 1.5rem);
+    background: var(--border);
+}
+
+.donor-step.complete .donor-step-connector {
+    background: linear-gradient(180deg, var(--success), var(--border));
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .donor-welcome-banner {
+        flex-direction: column;
+        padding: 1.5rem;
+        text-align: center;
+    }
+    .donor-progress-ring-wrapper {
+        flex-direction: column;
+        align-items: center;
+    }
+    .donor-quick-stats {
+        grid-template-columns: 1fr;
+    }
+}

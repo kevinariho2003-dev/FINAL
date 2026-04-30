@@ -1,0 +1,62 @@
+.swipe-card-wrapper {
+    position: relative;
+    width: 100%;
+    perspective: 1000px;
+}
+
+.swipe-card {
+    position: relative;
+    user-select: none;
+    touch-action: pan-y;
+    will-change: transform;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.swipe-card.dragging {
+    cursor: grabbing !important;
+}
+
+/* ── Overlays ── */
+.swipe-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    pointer-events: none;
+    border-radius: inherit;
+    transition: opacity 0.1s;
+}
+
+.swipe-overlay span {
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    padding: 0.5rem 1.5rem;
+    border-radius: 8px;
+    border: 3px solid;
+    transform: rotate(-15deg);
+}
+
+.swipe-overlay-left {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+.swipe-overlay-left span {
+    color: #ef4444;
+    border-color: #ef4444;
+}
+
+.swipe-overlay-right {
+    background: rgba(16, 185, 129, 0.15);
+}
+
+.swipe-overlay-right span {
+    color: #10b981;
+    border-color: #10b981;
+}
