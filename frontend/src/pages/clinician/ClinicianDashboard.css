@@ -375,3 +375,93 @@
     .clin-overview-grid { grid-template-columns: 1fr; }
     .clin-stats-grid { grid-template-columns: 1fr 1fr; }
 }
+
+.management-section {
+    margin-bottom: 3rem;
+}
+
+.section-divider-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-main);
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.75rem;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Status Badge for Denied */
+.badge-denied {
+    background: #fee2e2;
+    color: #ef4444;
+    border: 1px solid #fca5a5;
+}
+
+.empty-mini {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 2rem;
+    background: var(--bg-card);
+    border: 1px dashed var(--border-color);
+    border-radius: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.btn-group-sm {
+    display: flex;
+    gap: 0.4rem;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   ACCORDION SECTION STYLES (Supplementary)
+   Add this to your global CSS or import alongside ClinicianDashboard.css
+   ───────────────────────────────────────────────────────────── */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.accordion-section {
+    animation: fadeIn 0.3s ease;
+}
+
+.accordion-header {
+    font-family: inherit;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.accordion-header:hover {
+    background-color: var(--bg-hover, rgba(0, 0, 0, 0.02)) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.accordion-header:active {
+    transform: scale(0.99);
+}
+
+/* Smooth rotation for chevron icon */
+.accordion-header span:last-child {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Additional responsive adjustments */
+@media (max-width: 768px) {
+    .accordion-header {
+        padding: 0.75rem 1rem !important;
+        font-size: 0.95rem;
+    }
+}

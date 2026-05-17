@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../../services/api';
+import { Lock, Info, Calendar } from 'lucide-react';
 import '../Dashboard.css';
 
 const CONSENT_TYPES = [
@@ -15,23 +17,52 @@ export default function DonorConsentForm() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState('');
     const [message, setMessage] = useState({ type: '', text: '' });
+    const [isConsulted, setIsConsulted] = useState(false);
 
-    useEffect(() => { fetchConsents(); }, []);
+    // FIX: You must call the function here!
+    useEffect(() => { 
+        fetchInitialData(); 
+    }, []);
+
+    const fetchInitialData = async () => {
+        try {
+            // Fetch both in parallel just like the profile page
+            const [donorRes, consentRes] = await Promise.all([
+                api.get('/donors'),
+                api.get('/consents')
+            ]);
+
+            const status = donorRes.data?.status;
+            console.log("Verified Donor Status:", status);
+
+            // The Gate logic
+            if (status && status !== 'pre_consultation') {
+                setIsConsulted(true);
+                setConsents(consentRes.data || []);
+            } else {
+                setIsConsulted(false);
+            }
+        } catch (err) {
+            console.error("Initialization error", err);
+            setIsConsulted(false);
+        } finally {
+            setLoading(false); // This stops the spinner
+        }
+    };
 
     const fetchConsents = async () => {
         try {
             const res = await api.get('/consents');
             setConsents(res.data || []);
-        } catch { /* ignore */ }
-        finally { setLoading(false); }
+        } catch (err) {
+            console.error("Error fetching consents", err);
+        }
     };
 
     const getConsentStatus = (type) => {
         const matching = consents.filter(c => c.consent_type === type);
         if (matching.length === 0) return null;
-        // Get the latest version
-        const latest = matching.reduce((a, b) => a.version > b.version ? a : b);
-        return latest;
+        return matching.reduce((a, b) => a.version > b.version ? a : b);
     };
 
     const grantConsent = async (type) => {
@@ -62,8 +93,43 @@ export default function DonorConsentForm() {
         } finally { setSaving(''); }
     };
 
+    // 1. SPINNER CHECK
     if (loading) return <div className="page-loader"><div className="spinner"></div></div>;
 
+    // 2. LOCKED CHECK (The Gate)
+    if (!isConsulted) {
+        return (
+            <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '70vh' }}>
+                <div className="card text-center" style={{ maxWidth: '550px', padding: '3.5rem' }}>
+                    <div style={{ marginBottom: '1.5rem' }}>
+                        <div style={{ 
+                            width: '80px', height: '80px', 
+                            background: 'rgba(255, 193, 7, 0.1)', 
+                            borderRadius: '50%', 
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            margin: '0 auto' 
+                        }}>
+                            <Calendar size={40} color="#ffc107" />
+                        </div>
+                    </div>
+                    <h2 style={{ marginBottom: '1rem' }}>Consultation Required</h2>
+                    <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '2rem' }}>
+                        To ensure you are fully informed about the process, legal rights, and medical implications, 
+                        you must complete your <strong>Initial Consultation</strong> with a clinician before granting legal consents.
+                    </p>
+                    <div className="alert alert-info" style={{ textAlign: 'left', display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        <Info size={20} />
+                        <span>If you have already attended your meeting, please wait for the staff to update your status.</span>
+                    </div>
+                    <Link to="/donor/dashboard" className="btn btn-primary" style={{ marginTop: '2rem' }}>
+                        Return to Dashboard
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
+    // 3. MAIN FORM (Only shows if loading is false AND isConsulted is true)
     const grantedCount = CONSENT_TYPES.filter(ct => {
         const status = getConsentStatus(ct.value);
         return status && status.status === 'granted';
@@ -104,29 +170,15 @@ export default function DonorConsentForm() {
                                     <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                                         {ct.description}
                                     </p>
-                                    {current && (
-                                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-                                            Version {current.version} · {current.status === 'granted' ? 'Granted' : 'Revoked'} on{' '}
-                                            {new Date(current.status === 'granted' ? current.granted_at : current.revoked_at).toLocaleDateString()}
-                                        </p>
-                                    )}
                                 </div>
                                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                                     {!isGranted && (
-                                        <button
-                                            className="btn btn-success btn-sm"
-                                            onClick={() => grantConsent(ct.value)}
-                                            disabled={isSaving}
-                                        >
+                                        <button className="btn btn-success btn-sm" onClick={() => grantConsent(ct.value)} disabled={isSaving}>
                                             {isSaving ? 'Saving...' : 'Grant'}
                                         </button>
                                     )}
                                     {isGranted && (
-                                        <button
-                                            className="btn btn-danger btn-sm"
-                                            onClick={() => revokeConsent(current)}
-                                            disabled={isSaving}
-                                        >
+                                        <button className="btn btn-danger btn-sm" onClick={() => revokeConsent(current)} disabled={isSaving}>
                                             {isSaving ? 'Saving...' : 'Revoke'}
                                         </button>
                                     )}

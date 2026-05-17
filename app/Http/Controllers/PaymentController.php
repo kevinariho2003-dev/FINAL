@@ -12,6 +12,32 @@ class PaymentController extends Controller
     /**
      * Create a payment for a donation cycle.
      */
+    public function getDonorPayments(Request $request)
+    {
+        $user = $request->user();
+        $donor = \App\Models\DonorProfile::where('user_id', $user->id)->first();
+
+        if (!$donor) {
+            return response()->json(['message' => 'Donor profile not found.'], 404);
+        }
+
+        $payments = Payment::where('donor_id', $donor->id)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($p) {
+                return [
+                    'id' => $p->id,
+                    'milestone_name' => $p->payment_status === 'completed' ? 'Compensation Received' : 'Pending Milestone',
+                    'amount' => $p->amount,
+                    'date' => $p->payment_date ? $p->payment_date->format('Y-m-d') : 'TBD',
+                    'status' => $p->payment_status, // 'paid', 'pending', 'processing'
+                ];
+            });
+
+        return response()->json($payments);
+    }
+
+
     public function store(Request $request)
     {
         $user = $request->user();
@@ -40,6 +66,14 @@ class PaymentController extends Controller
             'payment_method' => $validated['payment_method'] ?? 'bank_transfer',
             'payment_status' => 'pending',
             'reference_number' => Payment::generateReference(),
+        ]);
+
+        \App\Models\Notification::create([
+            'user_id' => $cycle->donor->user_id,
+            'type' => 'payment',
+            'title' => 'New Payment Scheduled',
+            'message' => 'A payment of UGX ' . number_format($validated['amount']) . ' has been initiated for your cycle.',
+            'is_read' => false,
         ]);
 
         AuditLog::create([

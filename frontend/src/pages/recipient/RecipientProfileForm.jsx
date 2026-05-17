@@ -19,6 +19,8 @@ export default function RecipientProfileForm() {
     const [error, setError] = useState('');
     const [errors, setErrors] = useState({});
 
+    const [isEditing, setIsEditing] = useState(false);
+
     const [form, setForm] = useState({
         diagnosis: '',
         treatment_history: '',
@@ -37,6 +39,13 @@ export default function RecipientProfileForm() {
     });
 
     useEffect(() => { fetchProfile(); }, []);
+
+    useEffect(() => {
+        if (success || error) {
+            const timer = setTimeout(() => { setSuccess(''); setError(''); }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [success, error]);
 
     const fetchProfile = async () => {
         try {
@@ -75,25 +84,22 @@ export default function RecipientProfileForm() {
         setSaving(true);
         setError('');
         setSuccess('');
-        setErrors({});
-
+        
         try {
             const payload = { ...form };
-            Object.keys(payload).forEach(k => {
-                if (payload[k] === '') payload[k] = null;
-            });
+            Object.keys(payload).forEach(k => { if (payload[k] === '') payload[k] = null; });
 
             if (profile) {
                 await api.put(`/recipients/${profile.id}`, payload);
-                setSuccess('Profile updated successfully!');
+                setSuccess('Profile updated successfully! 🎉');
             } else {
                 await api.post('/recipients', payload);
-                setSuccess('Profile created successfully!');
+                setSuccess('Profile created successfully! 💜');
             }
+            setIsEditing(false); // Switch back to static view
             await fetchProfile();
         } catch (err) {
-            if (err.response?.data?.errors) setErrors(err.response.data.errors);
-            else setError(err.response?.data?.message || 'Failed to save profile.');
+            setError(err.response?.data?.message || 'Failed to save profile.');
         } finally { setSaving(false); }
     };
 
@@ -101,51 +107,74 @@ export default function RecipientProfileForm() {
 
     return (
         <div className="page">
+            {/* 🔔 FLOATING BANNER NOTIFICATIONS */}
+            <div className="banner-container">
+                {success && <div className="alert alert-success" style={{ boxShadow: '0 10px 30px rgba(16,185,129,0.2)' }}>{success}</div>}
+                {error && <div className="alert alert-error" style={{ boxShadow: '0 10px 30px rgba(239,68,68,0.2)' }}>{error}</div>}
+            </div>
+
             <div className="page-header">
                 <h1 className="page-title">Recipient Profile 💜</h1>
                 <p className="page-subtitle">
-                    {profile
-                        ? <>Code: <strong>{profile.recipient_code}</strong> — Status: <span className={`badge badge-${profile.status}`}>{profile.status}</span></>
-                        : 'Set up your profile and donor preferences'
-                    }
+                    {profile ? `Code: ${profile.recipient_code}` : 'Set up your profile'}
                 </p>
             </div>
 
-            {success && <div className="alert alert-success">{success}</div>}
-            {error && <div className="alert alert-error">{error}</div>}
-
             <form onSubmit={handleSubmit}>
-                {/* Medical Context */}
+                {/* Medical Context Section */}
                 <div className="card" style={{ marginBottom: '1.5rem' }}>
-                    <div className="card-header"><h3 className="card-title">🩺 Medical Context</h3></div>
+                    <div className="card-header card-header-flex">
+                        <h3 className="card-title">🩺 Medical Context</h3>
+                        <button 
+                            type="button" 
+                            className="btn-edit-toggle" 
+                            onClick={() => setIsEditing(!isEditing)}
+                        >
+                            {isEditing ? 'Cancel' : 'Edit Info'}
+                        </button>
+                    </div>
+                    
                     <div className="form-group">
                         <label className="form-label">Diagnosis</label>
-                        <textarea name="diagnosis" className="form-textarea" placeholder="Brief description of your fertility diagnosis..." value={form.diagnosis} onChange={handleChange} />
+                        <textarea 
+                            name="diagnosis" 
+                            className="form-textarea" 
+                            disabled={!isEditing} 
+                            value={form.diagnosis} 
+                            onChange={handleChange} 
+                        />
                     </div>
                     <div className="form-group">
                         <label className="form-label">Treatment History</label>
-                        <textarea name="treatment_history" className="form-textarea" placeholder="Previous treatments, IVF cycles, etc." value={form.treatment_history} onChange={handleChange} />
+                        <textarea 
+                            name="treatment_history" 
+                            className="form-textarea" 
+                            disabled={!isEditing} 
+                            value={form.treatment_history} 
+                            onChange={handleChange} 
+                        />
                     </div>
                 </div>
 
                 {/* Donor Preferences */}
                 <div className="card" style={{ marginBottom: '1.5rem' }}>
-                    <div className="card-header"><h3 className="card-title">🎯 Donor Preferences</h3></div>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
-                        These preferences help the matching engine find suitable donors. Leave blank for no preference.
-                    </p>
+                    <div className="card-header card-header-flex">
+                        <h3 className="card-title">🎯 Donor Preferences</h3>
+                        {!isEditing && <button type="button" className="btn-edit-toggle" onClick={() => setIsEditing(true)}>Edit Preferences</button>}
+                    </div>
 
                     <div className="form-row">
                         <div className="form-group">
                             <label className="form-label">Preferred Blood Type</label>
-                            <select name="preferred_blood_type" className="form-select" value={form.preferred_blood_type} onChange={handleChange}>
+                            <select name="preferred_blood_type" className="form-select" disabled={!isEditing} value={form.preferred_blood_type} onChange={handleChange}>
                                 <option value="">No preference</option>
                                 {BLOOD_TYPES.map(bt => <option key={bt} value={bt}>{bt}</option>)}
                             </select>
                         </div>
+                        
                         <div className="form-group">
                             <label className="form-label">Preferred Genotype</label>
-                            <select name="preferred_genotype" className="form-select" value={form.preferred_genotype} onChange={handleChange}>
+                            <select name="preferred_genotype" className="form-select" disabled={!isEditing} value={form.preferred_genotype} onChange={handleChange}>
                                 <option value="">No preference</option>
                                 {GENOTYPES.map(g => <option key={g} value={g}>{g}</option>)}
                             </select>
@@ -155,11 +184,11 @@ export default function RecipientProfileForm() {
                     <div className="form-row">
                         <div className="form-group">
                             <label className="form-label">Preferred Ethnicity</label>
-                            <input type="text" name="preferred_ethnicity" className="form-input" placeholder="e.g. Baganda" value={form.preferred_ethnicity} onChange={handleChange} />
+                            <input type="text" name="preferred_ethnicity" className="form-input" placeholder="e.g. Baganda" disabled={!isEditing} value={form.preferred_ethnicity} onChange={handleChange} />
                         </div>
                         <div className="form-group">
                             <label className="form-label">Preferred Skin Tone</label>
-                            <select name="preferred_skin_tone" className="form-select" value={form.preferred_skin_tone} onChange={handleChange}>
+                            <select name="preferred_skin_tone" className="form-select" disabled={!isEditing} value={form.preferred_skin_tone} onChange={handleChange}>
                                 <option value="">No preference</option>
                                 {SKIN_TONES.map(st => <option key={st} value={st}>{st}</option>)}
                             </select>
@@ -169,14 +198,14 @@ export default function RecipientProfileForm() {
                     <div className="form-row">
                         <div className="form-group">
                             <label className="form-label">Preferred Hair Color</label>
-                            <select name="preferred_hair_color" className="form-select" value={form.preferred_hair_color} onChange={handleChange}>
+                            <select name="preferred_hair_color" className="form-select" disabled={!isEditing} value={form.preferred_hair_color} onChange={handleChange}>
                                 <option value="">No preference</option>
                                 {HAIR_COLORS.map(hc => <option key={hc} value={hc}>{hc}</option>)}
                             </select>
                         </div>
                         <div className="form-group">
                             <label className="form-label">Preferred Eye Color</label>
-                            <select name="preferred_eye_color" className="form-select" value={form.preferred_eye_color} onChange={handleChange}>
+                            <select name="preferred_eye_color" className="form-select" disabled={!isEditing} value={form.preferred_eye_color} onChange={handleChange}>
                                 <option value="">No preference</option>
                                 {EYE_COLORS.map(ec => <option key={ec} value={ec}>{ec}</option>)}
                             </select>
@@ -186,28 +215,29 @@ export default function RecipientProfileForm() {
                     <div className="form-row">
                         <div className="form-group">
                             <label className="form-label">Preferred Donor Age (Min)</label>
-                            <input type="number" name="preferred_age_min" className="form-input" placeholder="18" value={form.preferred_age_min} onChange={handleChange} min="18" max="45" />
+                            <input type="number" name="preferred_age_min" className="form-input" placeholder="18" disabled={!isEditing} value={form.preferred_age_min} onChange={handleChange} min="18" max="45" />
                         </div>
                         <div className="form-group">
                             <label className="form-label">Preferred Donor Age (Max)</label>
-                            <input type="number" name="preferred_age_max" className="form-input" placeholder="35" value={form.preferred_age_max} onChange={handleChange} min="18" max="45" />
+                            <input type="number" name="preferred_age_max" className="form-input" placeholder="35" disabled={!isEditing} value={form.preferred_age_max} onChange={handleChange} min="18" max="45" />
                         </div>
                     </div>
 
                     <div className="form-row">
                         <div className="form-group">
                             <label className="form-label">Preferred Education Level</label>
-                            <select name="preferred_education_level" className="form-select" value={form.preferred_education_level} onChange={handleChange}>
+                            <select name="preferred_education_level" className="form-select" disabled={!isEditing} value={form.preferred_education_level} onChange={handleChange}>
                                 <option value="">No preference</option>
                                 {EDUCATION_LEVELS.map(el => <option key={el} value={el}>{el}</option>)}
                             </select>
                         </div>
                         <div className="form-group">
                             <label className="form-label">Max Previous Donations</label>
-                            <input type="number" name="max_previous_donations" className="form-input" placeholder="e.g. 5" value={form.max_previous_donations} onChange={handleChange} min="0" max="20" />
+                            <input type="number" name="max_previous_donations" className="form-input" placeholder="e.g. 5" disabled={!isEditing} value={form.max_previous_donations} onChange={handleChange} min="0" max="20" />
                         </div>
                     </div>
                 </div>
+                
 
                 {/* Additional */}
                 <div className="card" style={{ marginBottom: '1.5rem' }}>
@@ -220,9 +250,12 @@ export default function RecipientProfileForm() {
                     </div>
                 </div>
 
-                <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={saving}>
-                    {saving ? 'Saving...' : profile ? 'Update Profile' : 'Create Profile'}
-                </button>
+                {isEditing && (
+                    <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={saving}>
+                        {saving ? 'Saving...' : 'Save Profile Changes'}
+                    </button>
+                )}
+
             </form>
         </div>
     );

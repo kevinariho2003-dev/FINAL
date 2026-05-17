@@ -43,6 +43,15 @@ export default function RecipientDashboard() {
     const approvedMatches = Array.isArray(matches) ? matches.filter(m => m.status === 'approved') : [];
     const matchCount = Array.isArray(matches) ? matches.length : 0;
 
+    // Check if ALL three required types are in the 'granted' list
+    const requiredTypes = ['donor_registration', 'recipient_matching', 'info_use'];
+    const activeConsentTypes = consents
+        .filter(c => c.status === 'granted')
+        .map(c => c.consent_type);
+    
+    const hasAllConsents = requiredTypes.every(type => activeConsentTypes.includes(type));
+    const grantedCount = activeConsentTypes.filter(t => requiredTypes.includes(t)).length;
+
     return (
         <div className="page">
             <div className="page-header" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -89,16 +98,30 @@ export default function RecipientDashboard() {
                         <div className="card-action-arrow">→</div>
                     </Link>
 
-                    <div className={`checklist-card ${hasMatchingConsent ? 'complete' : 'pending'}`}>
+                    <Link 
+                        to="consent" 
+                        className={`checklist-card ${hasAllConsents ? 'complete' : 'action-required'}`}
+                    >
                         <div className="card-icon-wrapper">
-                            {hasMatchingConsent ? '🛡️' : '🔒'}
+                            {hasAllConsents ? '✅' : '🛡️'}
                         </div>
                         <div className="card-content-wrapper">
-                            <h4>{hasMatchingConsent ? `${activeConsents.length} Consent(s) Granted` : 'Grant Required Consents'}</h4>
-                            <p>{hasMatchingConsent ? 'Your legal and medical consents are active' : 'Awaiting profile completion and consent forms'}</p>
+                            <h4>
+                                {hasAllConsents 
+                                    ? 'All Consents Granted' 
+                                    : `Grant Required Consents (${grantedCount}/${requiredTypes.length})`
+                                }
+                            </h4>
+                            <p>
+                                {hasAllConsents 
+                                    ? 'Your legal and medical consents are active' 
+                                    : 'Please review and sign the required digital consent forms'}
+                            </p>
                         </div>
-                        {hasMatchingConsent && <div className="card-action-arrow check-mark">✓</div>}
-                    </div>
+                        <div className={`card-action-arrow ${hasAllConsents ? 'check-mark' : ''}`}>
+                            {hasAllConsents ? '✓' : '→'}
+                        </div>
+                    </Link>
 
                     <div className={`checklist-card ${matchCount > 0 ? 'complete' : 'pending'}`}>
                         <div className="card-icon-wrapper">

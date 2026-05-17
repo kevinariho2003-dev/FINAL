@@ -12,7 +12,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('recipient_code')->unique();
-            $table->enum('status', ['active', 'matched', 'inactive'])->default('active');
+            
+            // REMOVED ->change() HERE:
+            $table->enum('status', ['active', 'matched', 'inactive', 'pending', 'approved', 'suspended'])
+                  ->default('pending');
 
             // Medical context
             $table->text('diagnosis')->nullable();
@@ -37,6 +40,7 @@ return new class extends Migration
 
             $table->timestamps();
 
+            // This will work now because 'status' was properly created above
             $table->index('status');
         });
     }

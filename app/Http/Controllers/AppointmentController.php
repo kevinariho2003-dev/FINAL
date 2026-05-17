@@ -14,6 +14,19 @@ class AppointmentController extends Controller
      */
     public function index(Request $request, $donorId)
     {
+            $query = Appointment::query();
+
+        // If ID is 0, we want all appointments for the clinician overview
+        if ($donorId != 0) {
+            $query->where('donor_id', $donorId);
+        }
+
+        // Apply filters from the frontend
+        if ($request->has('status')) {
+            $query->where('status', $request->status);
+        }
+    
+    return $query->with('donor.user')->get();
         $user = $request->user();
         $profile = DonorProfile::findOrFail($donorId);
 

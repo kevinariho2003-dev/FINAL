@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import './Sidebar.css';
 
-/* ── SVG Icons (inline for zero deps) ── */
+/* ── SVG Icons (Updated with Pill and Receipt paths) ── */
 const Icon = ({ d, size = 20 }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d={d} />
@@ -24,6 +24,9 @@ const icons = {
     logout: 'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9',
     menu: 'M3 12h18M3 6h18M3 18h18',
     close: 'M18 6L6 18M6 6l12 12',
+    pill: 'M10.5 3a5.25 5.25 0 0 0-3.71 8.97l5.24 5.24a5.25 5.25 0 0 0 7.42-7.42l-5.24-5.24A5.25 5.25 0 0 0 10.5 3z M13 11l-3 3',
+    receipt: 'M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1z M16 8H8 M16 12H8 M16 16H8',
+    notifications: 'M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9 M13.73 21a2 2 0 0 1-3.46 0',
 };
 
 const navConfig = {
@@ -43,14 +46,18 @@ const navConfig = {
     ],
     donor: [
         { to: '/donor/dashboard', icon: 'dashboard', label: 'Dashboard' },
+        { to: '/donor/notifications', icon: 'notifications', label: 'Notifications' },
         { to: '/donor/profile', icon: 'profile', label: 'My Profile' },
         { to: '/donor/consents', icon: 'consents', label: 'Consents' },
-        { to: '/donor/screening', icon: 'screening', label: 'Screening' },
+        { to: '/donor/screening', icon: 'screening', label: 'Appointments' },
+        { to: '/donor/medications', icon: 'pill', label: 'Medications' }, // NEW
+        { to: '/donor/payments', icon: 'receipt', label: 'Payments' },    // NEW
         { to: '/donor/cycles', icon: 'matches', label: 'My Cycles' },
     ],
     recipient: [
         { to: '/recipient/dashboard', icon: 'dashboard', label: 'Dashboard' },
         { to: '/recipient/profile', icon: 'profile', label: 'My Profile' },
+        { to: 'consent', icon: 'consents', label: 'Consents' },
         { to: '/recipient/matches', icon: 'matches', label: 'My Matches' },
     ],
 };
@@ -87,7 +94,6 @@ export default function Sidebar() {
 
     return (
         <>
-            {/* Mobile top bar */}
             <div className="sidebar-mobile-bar">
                 <button className="sidebar-mobile-toggle" onClick={() => setMobileOpen(!mobileOpen)}>
                     <Icon d={mobileOpen ? icons.close : icons.menu} size={22} />
@@ -95,11 +101,9 @@ export default function Sidebar() {
                 <span className="sidebar-mobile-brand">EDRMS</span>
             </div>
 
-            {/* Overlay for mobile */}
             {mobileOpen && <div className="sidebar-overlay" onClick={() => setMobileOpen(false)} />}
 
             <aside className={`sidebar ${collapsed ? 'sidebar--collapsed' : ''} ${mobileOpen ? 'sidebar--mobile-open' : ''}`}>
-                {/* Brand */}
                 <div className="sidebar-brand">
                     <div className="sidebar-logo">
                         <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
@@ -122,7 +126,6 @@ export default function Sidebar() {
                     </button>
                 </div>
 
-                {/* Navigation */}
                 <nav className="sidebar-nav">
                     <div className="sidebar-nav-label">{!collapsed && 'MENU'}</div>
                     {links.map(link => (
@@ -139,7 +142,6 @@ export default function Sidebar() {
                     ))}
                 </nav>
 
-                {/* Theme Toggle */}
                 <div className="sidebar-theme-toggle">
                     <button className="theme-btn" onClick={toggleTheme} title={theme === 'light' ? 'Switch to Dark' : 'Switch to Light'}>
                         <span className="theme-icon">{theme === 'light' ? '🌙' : '☀️'}</span>
@@ -147,7 +149,6 @@ export default function Sidebar() {
                     </button>
                 </div>
 
-                {/* User Section */}
                 <div className="sidebar-footer">
                     <div className="sidebar-user">
                         <div className="sidebar-user-avatar" style={{ background: `linear-gradient(135deg, ${roleBadgeColor[user.role]}, ${roleBadgeColor[user.role]}99)` }}>
