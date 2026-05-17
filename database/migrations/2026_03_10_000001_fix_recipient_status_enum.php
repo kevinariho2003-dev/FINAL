@@ -7,19 +7,30 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
-        // Change the enum to include all needed statuses
-        DB::statement("ALTER TABLE recipient_profiles MODIFY COLUMN status ENUM('active', 'matched', 'inactive', 'pending', 'approved', 'suspended') DEFAULT 'pending'");
+        // 1. Update the column using Blueprint instead of Raw SQL
+        Schema::table('recipient_profiles', function (Blueprint $table) {
+            $table->enum('status', ['active', 'matched', 'inactive', 'pending', 'approved', 'suspended'])
+                  ->default('pending')
+                  ->change();
+        });
 
-        // Convert existing 'active' entries to 'pending' so clinician can approve them
+        // 2. Convert existing 'active' entries to 'pending'
         DB::table('recipient_profiles')
             ->where('status', 'active')
             ->update(['status' => 'pending']);
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
+        // 1. Revert data changes
         DB::table('recipient_profiles')
             ->where('status', 'pending')
             ->update(['status' => 'active']);
@@ -32,6 +43,11 @@ return new class extends Migration
             ->where('status', 'suspended')
             ->update(['status' => 'inactive']);
 
-        DB::statement("ALTER TABLE recipient_profiles MODIFY COLUMN status ENUM('active', 'matched', 'inactive') DEFAULT 'active'");
+        // 2. Revert the column definition
+        Schema::table('recipient_profiles', function (Blueprint $table) {
+            $table->enum('status', ['active', 'matched', 'inactive'])
+                  ->default('active')
+                  ->change();
+        });
     }
 };

@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
+import { Lock, FileText, ChevronRight } from 'lucide-react';
 import '../Dashboard.css';
 import './DonorProfile.css';
 
@@ -24,6 +26,11 @@ export default function DonorProfileForm() {
     const [photoPreview, setPhotoPreview] = useState(null);
     const photoInputRef = useRef(null);
 
+    const [isEditing, setIsEditing] = useState(false);
+
+    const [consentsDone, setConsentsDone] = useState(false);
+
+    // FIXED: Added the missing fields to the initial state
     const [form, setForm] = useState({
         date_of_birth: '',
         blood_type: '',
@@ -37,9 +44,13 @@ export default function DonorProfileForm() {
         eye_color: '',
         education_level: '',
         occupation: '',
-        medical_history: [],
+        medical_history: '', // Changed to string to work with textarea
         family_medical_history: [],
         availability_status: 'available',
+        menstrual_regularity: 'regular',
+        prev_pregnancies: '',
+        smoking: 'never',
+        blood_group: ''
     });
 
     useEffect(() => {
@@ -51,6 +62,14 @@ export default function DonorProfileForm() {
             const res = await api.get('/donors');
             if (res.data && res.data.id) {
                 setProfile(res.data);
+
+                // CHECK STATUS: 
+                // If status is NOT 'pre_consultation' or 'signing_consents', they can see this page.
+                const restrictedStatuses = ['pre_consultation', 'signing_consents'];
+                if (!restrictedStatuses.includes(res.data.status)) {
+                    setConsentsDone(true);
+                }
+
                 setForm({
                     date_of_birth: res.data.date_of_birth?.split('T')[0] || '',
                     blood_type: res.data.blood_type || '',
@@ -64,9 +83,13 @@ export default function DonorProfileForm() {
                     eye_color: res.data.eye_color || '',
                     education_level: res.data.education_level || '',
                     occupation: res.data.occupation || '',
-                    medical_history: res.data.medical_history || [],
+                    medical_history: res.data.medical_history || '',
                     family_medical_history: res.data.family_medical_history || [],
                     availability_status: res.data.availability_status || 'available',
+                    menstrual_regularity: res.data.menstrual_regularity || 'regular',
+                    prev_pregnancies: res.data.prev_pregnancies || '',
+                    smoking: res.data.smoking || 'never',
+                    blood_group: res.data.blood_group || ''
                 });
                 if (res.data.photo_path) {
                     setPhotoPreview(`http://127.0.0.1:8000/storage/${res.data.photo_path}`);
@@ -95,9 +118,9 @@ export default function DonorProfileForm() {
 
         setUploading(true);
         try {
-            const formData = new FormData();
-            formData.append('photo', file);
-            const res = await api.post(`/donors/${profile.id}/photo`, formData, {
+            const formDataPayload = new FormData();
+            formDataPayload.append('photo', file);
+            const res = await api.post(`/donors/${profile.id}/photo`, formDataPayload, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
             setPhotoPreview(res.data.photo_url);
@@ -134,6 +157,7 @@ export default function DonorProfileForm() {
                 await api.post('/donors', payload);
                 setSuccess('Profile created successfully! Awaiting clinician approval.');
             }
+            setIsEditing(false); // Switch back to static view
             await fetchProfile();
         } catch (err) {
             if (err.response?.data?.errors) {
@@ -148,12 +172,58 @@ export default function DonorProfileForm() {
 
     if (loading) return <div className="page-loader"><div className="spinner"></div></div>;
 
+    // ── Gated Access Check ──
+    if (!consentsDone) {
+        return (
+            <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '70vh' }}>
+                <div className="card text-center" style={{ maxWidth: '500px', padding: '3rem' }}>
+                    <div style={{ marginBottom: '1.5rem' }}>
+                        <div style={{ 
+                            width: '80px', 
+                            height: '80px', 
+                            background: 'var(--bg-input)', 
+                            borderRadius: '50%', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center',
+                            margin: '0 auto' 
+                        }}>
+                            <Lock size={40} color="var(--text-secondary)" />
+                        </div>
+                    </div>
+                    <h2 style={{ marginBottom: '1rem' }}>Profile Locked</h2>
+                    <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '2rem' }}>
+                        To ensure legal compliance and donor safety, you must first finish filling the 
+                        <Link to="/donor/consents" style={{ 
+                            color: 'var(--accent)', 
+                            fontWeight: 'bold', 
+                            textDecoration: 'underline',
+                            margin: '0 5px'
+                        }}>
+                            Consents
+                        </Link> 
+                        before you can complete your phenotypic profile.
+                    </p>
+                    <Link to="/donor/consents" className="btn-edit-toggle" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                        Go to Consents <ChevronRight size={16} />
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
     const bmi = form.height_cm && form.weight_kg
         ? (form.weight_kg / ((form.height_cm / 100) ** 2)).toFixed(1)
         : null;
 
     return (
         <div className="page">
+             {/* 🔔 FLOATING BANNER NOTIFICATIONS */}
+            <div className="banner-container">
+                {success && <div className="alert alert-success" style={{ boxShadow: '0 10px 30px rgba(16,185,129,0.2)' }}>{success}</div>}
+                {error && <div className="alert alert-error" style={{ boxShadow: '0 10px 30px rgba(239,68,68,0.2)' }}>{error}</div>}
+            </div>
+
             <div className="page-header">
                 <h1 className="page-title">Donor Profile 🌸</h1>
                 <p className="page-subtitle">
@@ -164,8 +234,6 @@ export default function DonorProfileForm() {
                 </p>
             </div>
 
-            {success && <div className="alert alert-success">{success}</div>}
-            {error && <div className="alert alert-error">{error}</div>}
 
             {/* ── Photo Upload Section ── */}
             <div className="card" style={{ marginBottom: '1.5rem' }}>
@@ -216,17 +284,25 @@ export default function DonorProfileForm() {
             <form onSubmit={handleSubmit}>
                 {/* Medical Section */}
                 <div className="card" style={{ marginBottom: '1.5rem' }}>
-                    <div className="card-header"><h3 className="card-title">🩺 Medical Information</h3></div>
+                    <div className="card-header card-header-flex">
+                        <h3 className="card-title">🩺 Medical Information</h3>
+                        <button 
+                            type="button" 
+                            className="btn-edit-toggle" 
+                            onClick={() => setIsEditing(!isEditing)}>
+                            {isEditing ? 'Cancel' : 'Edit Info'}
+                        </button>
+                    </div>
 
                     <div className="form-row">
                         <div className="form-group">
                             <label className="form-label">Date of Birth *</label>
-                            <input type="date" name="date_of_birth" className="form-input" value={form.date_of_birth} onChange={handleChange} required />
+                            <input type="date" name="date_of_birth" className="form-input" disabled={!isEditing} value={form.date_of_birth} onChange={handleChange} required />
                             {errors.date_of_birth && <span className="form-error">{errors.date_of_birth[0]}</span>}
                         </div>
                         <div className="form-group">
                             <label className="form-label">Blood Type</label>
-                            <select name="blood_type" className="form-select" value={form.blood_type} onChange={handleChange}>
+                            <select name="blood_type" className="form-select" disabled={!isEditing} value={form.blood_type} onChange={handleChange}>
                                 <option value="">Select...</option>
                                 {BLOOD_TYPES.map(bt => <option key={bt} value={bt}>{bt}</option>)}
                             </select>
@@ -236,21 +312,21 @@ export default function DonorProfileForm() {
                     <div className="form-row">
                         <div className="form-group">
                             <label className="form-label">Genotype</label>
-                            <select name="genotype" className="form-select" value={form.genotype} onChange={handleChange}>
+                            <select name="genotype" className="form-select" disabled={!isEditing} value={form.genotype} onChange={handleChange}>
                                 <option value="">Select...</option>
                                 {GENOTYPES.map(g => <option key={g} value={g}>{g}</option>)}
                             </select>
                         </div>
                         <div className="form-group">
                             <label className="form-label">Height (cm)</label>
-                            <input type="number" name="height_cm" className="form-input" placeholder="e.g. 165" value={form.height_cm} onChange={handleChange} min="100" max="250" />
+                            <input type="number" name="height_cm" className="form-input" placeholder="e.g. 165" disabled={!isEditing} value={form.height_cm} onChange={handleChange} min="100" max="250" />
                         </div>
                     </div>
 
                     <div className="form-row">
                         <div className="form-group">
                             <label className="form-label">Weight (kg)</label>
-                            <input type="number" name="weight_kg" className="form-input" placeholder="e.g. 58" value={form.weight_kg} onChange={handleChange} min="30" max="200" />
+                            <input type="number" name="weight_kg" className="form-input" placeholder="e.g. 58" disabled={!isEditing} value={form.weight_kg} onChange={handleChange} min="30" max="200" />
                         </div>
                         <div className="form-group">
                             <label className="form-label">BMI (auto-calculated)</label>
@@ -266,11 +342,11 @@ export default function DonorProfileForm() {
                     <div className="form-row">
                         <div className="form-group">
                             <label className="form-label">Ethnicity</label>
-                            <input type="text" name="ethnicity" className="form-input" placeholder="e.g. Baganda, Acholi..." value={form.ethnicity} onChange={handleChange} />
+                            <input type="text" name="ethnicity" className="form-input" placeholder="e.g. Baganda, Acholi..." disabled={!isEditing} value={form.ethnicity} onChange={handleChange} />
                         </div>
                         <div className="form-group">
                             <label className="form-label">Skin Tone</label>
-                            <select name="skin_tone" className="form-select" value={form.skin_tone} onChange={handleChange}>
+                            <select name="skin_tone" className="form-select" disabled={!isEditing} value={form.skin_tone} onChange={handleChange}>
                                 <option value="">Select...</option>
                                 {SKIN_TONES.map(st => <option key={st} value={st}>{st}</option>)}
                             </select>
@@ -280,14 +356,14 @@ export default function DonorProfileForm() {
                     <div className="form-row">
                         <div className="form-group">
                             <label className="form-label">Hair Color</label>
-                            <select name="hair_color" className="form-select" value={form.hair_color} onChange={handleChange}>
+                            <select name="hair_color" className="form-select" disabled={!isEditing} value={form.hair_color} onChange={handleChange}>
                                 <option value="">Select...</option>
                                 {HAIR_COLORS.map(hc => <option key={hc} value={hc}>{hc}</option>)}
                             </select>
                         </div>
                         <div className="form-group">
                             <label className="form-label">Hair Texture</label>
-                            <select name="hair_texture" className="form-select" value={form.hair_texture} onChange={handleChange}>
+                            <select name="hair_texture" className="form-select" disabled={!isEditing} value={form.hair_texture} onChange={handleChange}>
                                 <option value="">Select...</option>
                                 {HAIR_TEXTURES.map(ht => <option key={ht} value={ht}>{ht}</option>)}
                             </select>
@@ -296,7 +372,7 @@ export default function DonorProfileForm() {
 
                     <div className="form-group">
                         <label className="form-label">Eye Color</label>
-                        <select name="eye_color" className="form-select" value={form.eye_color} onChange={handleChange}>
+                        <select name="eye_color" className="form-select" disabled={!isEditing} value={form.eye_color} onChange={handleChange}>
                             <option value="">Select...</option>
                             {EYE_COLORS.map(ec => <option key={ec} value={ec}>{ec}</option>)}
                         </select>
@@ -309,21 +385,70 @@ export default function DonorProfileForm() {
 
                     <div className="form-row">
                         <div className="form-group">
-                            <label className="form-label">Education Level</label>
-                            <select name="education_level" className="form-select" value={form.education_level} onChange={handleChange}>
+                            <label className="form-label">Highest Education Level</label>
+                            <select name="education_level" className="form-select" disabled={!isEditing} value={form.education_level} onChange={handleChange}>
                                 <option value="">Select...</option>
                                 {EDUCATION_LEVELS.map(el => <option key={el} value={el}>{el}</option>)}
                             </select>
                         </div>
                         <div className="form-group">
                             <label className="form-label">Occupation</label>
-                            <input type="text" name="occupation" className="form-input" placeholder="e.g. Nurse, Teacher..." value={form.occupation} onChange={handleChange} />
+                            <input type="text" name="occupation" className="form-input" placeholder="e.g. Nurse, Teacher..." disabled={!isEditing} value={form.occupation} onChange={handleChange} />
                         </div>
                     </div>
+                </div>
 
-                    <div className="form-group">
+                {/* 1. Fertility & Reproductive History */}
+                <div className="card shadow-sm mb-4">
+                    <div className="card-header bg-white"><h5>Fertility & Reproductive History</h5></div>
+                    <div className="card-body">
+                        <div className="row g-3">
+                            <div className="col-md-6">
+                                <label className="form-label">Menstrual Cycle Regularity</label>
+                                {/* FIXED: changed formData to form and added disabled prop */}
+                                <select className="form-select" name="menstrual_regularity" value={form.menstrual_regularity} onChange={handleChange} disabled={!isEditing}>
+                                    <option value="regular">Regular</option>
+                                    <option value="irregular">Irregular</option>
+                                </select>
+                            </div>
+                            <div className="col-md-6">
+                                <label className="form-label">Previous Pregnancies (Count)</label>
+                                {/* FIXED: changed formData to form and added disabled prop */}
+                                <input type="number" className="form-input" name="prev_pregnancies" value={form.prev_pregnancies} onChange={handleChange} disabled={!isEditing} />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* 2. Medical & Lifestyle Information */}
+                <div className="card shadow-sm mb-4">
+                    <div className="card-header bg-white"><h5>Medical & Lifestyle</h5></div>
+                    <div className="card-body">
+                        <div className="row g-3">
+                            <div className="col-md-12">
+                                <label className="form-label">Chronic Illnesses or Allergies</label>
+                                {/* FIXED: changed formData to form and added disabled prop */}
+                                <textarea className="form-input" name="medical_history" value={form.medical_history} onChange={handleChange} placeholder="List any medical conditions..." disabled={!isEditing}></textarea>
+                            </div>
+                            <div className="col-md-6">
+                                <label className="form-label">Smoking Status</label>
+                                {/* FIXED: changed formData to form and added disabled prop */}
+                                <select className="form-select" name="smoking" value={form.smoking} onChange={handleChange} disabled={!isEditing}>
+                                    <option value="never">Never</option>
+                                    <option value="former">Former</option>
+                                    <option value="active">Active</option>
+                                </select>
+                            </div>
+                            <div className="col-md-6">
+                                <label className="form-label">Blood Group</label>
+                                {/* FIXED: changed formData to form and added disabled prop */}
+                                <input type="text" className="form-input" name="blood_group" value={form.blood_group} onChange={handleChange} placeholder="e.g. O+" disabled={!isEditing} />
+                            </div>
+                        </div>
+                    </div>
+                    <div className="form-group" style={{ padding: '1rem' }}>
                         <label className="form-label">Availability</label>
-                        <select name="availability_status" className="form-select" value={form.availability_status} onChange={handleChange}>
+                        <select name="availability_status" className="form-select" disabled={!isEditing} value={form.availability_status} onChange={handleChange}>
                             <option value="available">Available</option>
                             <option value="unavailable">Unavailable</option>
                             <option value="on_cycle">On Cycle</option>
@@ -331,9 +456,12 @@ export default function DonorProfileForm() {
                     </div>
                 </div>
 
-                <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={saving}>
-                    {saving ? 'Saving...' : profile ? 'Update Profile' : 'Create Profile'}
-                </button>
+                {isEditing && (
+                    <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={saving}>
+                        {saving ? 'Saving...' : 'Save Profile Changes'}
+                    </button>
+                )}
+
             </form>
         </div>
     );

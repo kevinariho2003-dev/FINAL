@@ -145,3 +145,58 @@
     font-weight: 600;
     margin-top: 0.15rem;
 }
+
+/* Floating Notification Banner */
+.banner-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    width: 90%;
+    max-width: 600px;
+    animation: slideInDown 0.4s var(--ease-spring);
+}
+
+@keyframes slideInDown {
+    from { transform: translate(-50%, -100%); opacity: 0; }
+    to { transform: translate(-50%, 0); opacity: 1; }
+}
+
+/* Static Form Styling */
+.form-input:disabled, 
+.form-textarea:disabled, 
+.form-select:disabled {
+    background: transparent;
+    border-color: transparent;
+    padding-left: 0;
+    color: var(--text-primary);
+    font-weight: 500;
+    cursor: default;
+    resize: none;
+    appearance: none; /* Removes select arrow */
+}
+
+/* Header with Edit Button */
+.card-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-edit-toggle {
+    background: var(--accent-subtle);
+    color: var(--accent);
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--radius-md);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-edit-toggle:hover {
+    background: var(--accent);
+    color: white;
+}

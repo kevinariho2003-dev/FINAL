@@ -117,11 +117,34 @@ const Icons = {
             <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
         </svg>
     ),
+    calendar: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
+    ),
+    stethoscope: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4.8 2.3A.3.3 0 1 0 5 2a.3.3 0 0 0-.2.3Z"/><path d="M10 13a7 7 0 0 0-7-7"/><path d="M10 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M10 15V3a2 2 0 0 0-4 0v1.5M10 19h2a6 6 0 0 0 6-6v-3.5"/><circle cx="18" cy="7" r="3"/>
+        </svg>
+    ),
+    dna: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M8 3c.5 0 2.5 1 2.5 3s-2.5 7.5-2.5 11 2 4 2.5 4"/><path d="M16 3c-.5 0-2.5 1-2.5 3s2.5 7.5 2.5 11-2 4-2.5 4"/><path d="M10.5 6h3"/><path d="M8 12h8"/><path d="M10.5 18h3"/>
+        </svg>
+    ),
 };
 
 export default function ClinicianDashboard() {
     const { user, setUser } = useAuth();
-    const [stats, setStats] = useState(null);
+    const [stats, setStats] = useState({
+        pendingConsultations: 0,
+        pendingDonors: 0,
+        scheduledAppointments: 0,
+        matchesForReview: 0,
+        eggRetrievals: 0,
+        activeDonors: 0,
+        activeRecipients: 0,
+    });
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef(null);
@@ -138,7 +161,6 @@ export default function ClinicianDashboard() {
             const res = await api.post('/users/avatar', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            // Update local storage and context
             const updatedUser = res.data.user;
             localStorage.setItem('user', JSON.stringify(updatedUser));
             setUser(updatedUser);
@@ -147,41 +169,59 @@ export default function ClinicianDashboard() {
             alert('Failed to upload image. Please ensure it is less than 5MB.');
         } finally {
             setUploading(false);
-            e.target.value = null; // reset input
+            e.target.value = null;
         }
     };
 
     useEffect(() => {
-        const fetchStats = async () => {
+        const fetchAllStats = async () => {
             try {
-                const [donorsRes, recipientsRes, matchesRes] = await Promise.allSettled([
-                    api.get('/donors', { params: { status: 'pending' } }),
-                    api.get('/recipients'),
-                    api.get('/matches', { params: { status: 'proposed' } }),
+                // Fetch each stat individually
+                const [
+                    consultationsRes,
+                    donorApprovalsRes,
+                    appointmentsRes,
+                    matchesRes,
+                    retrievalsRes,
+                    activeDonorsRes,
+                    recipientsRes
+                ] = await Promise.allSettled([
+                    api.get('/clinician/stats/pending-consultations'),
+                    api.get('/clinician/stats/pending-donor-approvals'),
+                    api.get('/clinician/stats/scheduled-appointments'),
+                    api.get('/clinician/stats/matches-for-review'),
+                    api.get('/clinician/stats/egg-retrievals'),
+                    api.get('/clinician/stats/active-donors'),
+                    api.get('/clinician/stats/active-recipients')
                 ]);
 
-                const pendingDonors = donorsRes.status === 'fulfilled'
-                    ? (donorsRes.value.data?.data || donorsRes.value.data || []) : [];
-                const allRecipients = recipientsRes.status === 'fulfilled'
-                    ? (recipientsRes.value.data?.data || recipientsRes.value.data || []) : [];
-                const proposedMatches = matchesRes.status === 'fulfilled'
-                    ? (matchesRes.value.data?.data || matchesRes.value.data || []) : [];
-
-                const allDonorsRes = await api.get('/donors').catch(() => ({ data: [] }));
-                const allDonors = allDonorsRes.data?.data || allDonorsRes.data || [];
-                const activeDonors = Array.isArray(allDonors)
-                    ? allDonors.filter(d => d.status === 'approved').length : 0;
+                // Helper function to get count from response
+                const getCount = (result, defaultValue = 0) => {
+                    if (result.status === 'fulfilled' && result.value?.data?.success) {
+                        return result.value.data.count;
+                    }
+                    console.warn('Failed to fetch stat:', result);
+                    return defaultValue;
+                };
 
                 setStats({
-                    pendingDonors: Array.isArray(pendingDonors) ? pendingDonors.length : 0,
-                    matchesForReview: Array.isArray(proposedMatches) ? proposedMatches.length : 0,
-                    activeDonors,
-                    activeRecipients: Array.isArray(allRecipients) ? allRecipients.length : 0,
+                    pendingConsultations: getCount(consultationsRes),
+                    pendingDonors: getCount(donorApprovalsRes),
+                    scheduledAppointments: getCount(appointmentsRes),
+                    matchesForReview: getCount(matchesRes),
+                    eggRetrievals: getCount(retrievalsRes),
+                    activeDonors: getCount(activeDonorsRes),
+                    activeRecipients: getCount(recipientsRes),
                 });
-            } catch { /* ignore */ }
-            finally { setLoading(false); }
+
+            } catch (error) {
+                console.error("Error fetching stats:", error);
+            } finally {
+                setLoading(false);
+            }
         };
-        fetchStats();
+
+        fetchAllStats();
     }, []);
 
     if (loading) return <div className="page-loader"><div className="spinner"></div></div>;
@@ -213,7 +253,7 @@ export default function ClinicianDashboard() {
                             </div>
                         )}
                         <div className="clin-avatar-edit-overlay">
-                            <span style={{ fontSize: '1.2rem' }}>📷</span>
+                            <span style={{ fontSize: '1.2rem' }}></span>
                         </div>
                     </div>
                     <input
@@ -247,10 +287,13 @@ export default function ClinicianDashboard() {
             {/* Stat Cards */}
             <div className="clin-stats-grid">
                 {[
-                    { label: 'Pending Approvals', value: stats?.pendingDonors || 0, icon: Icons.clipboard, color: '#f59e0b', trend: stats?.pendingDonors > 0 ? 'Needs attention' : 'All clear' },
-                    { label: 'Matches for Review', value: stats?.matchesForReview || 0, icon: Icons.link, color: '#8b5cf6', trend: stats?.matchesForReview > 0 ? 'Awaiting review' : 'Up to date' },
-                    { label: 'Active Donors', value: stats?.activeDonors || 0, icon: Icons.users, color: '#10b981', trend: 'Approved profiles' },
-                    { label: 'Active Recipients', value: stats?.activeRecipients || 0, icon: Icons.heart, color: '#06b6d4', trend: 'Registered cases' },
+                    { label: 'Pending Consultations', value: stats.pendingConsultations, icon: Icons.stethoscope, color: '#ef4444', trend: 'Donors who requested consultation', api: 'pending-consultations' },
+                    { label: 'Pending Donor Approvals', value: stats.pendingDonors, icon: Icons.clipboard, color: '#f59e0b', trend: 'Donors waiting profile approval', api: 'pending-donor-approvals' },
+                    { label: 'Scheduled Appointments', value: stats.scheduledAppointments, icon: Icons.calendar, color: '#3b82f6', trend: 'Donors waiting for physical', api: 'scheduled-appointments' },
+                    { label: 'Matches for Review', value: stats.matchesForReview, icon: Icons.link, color: '#8b5cf6', trend: 'Awaiting decision', api: 'matches-for-review' },
+                    { label: 'Egg Retrievals', value: stats.eggRetrievals, icon: Icons.dna, color: '#ec4899', trend: 'Upcoming procedures', api: 'egg-retrievals' },
+                    { label: 'Active Donors', value: stats.activeDonors, icon: Icons.users, color: '#10b981', trend: 'Passed physical & active', api: 'active-donors' },
+                    { label: 'Active Recipients', value: stats.activeRecipients, icon: Icons.heart, color: '#06b6d4', trend: 'Registered', api: 'active-recipients' },
                 ].map((s, i) => (
                     <div key={i} className="clin-stat-card" style={{ '--card-accent': s.color, animationDelay: `${i * 80}ms` }}>
                         <div className="clin-stat-icon" style={{ color: s.color, background: `${s.color}15` }}>
@@ -262,23 +305,24 @@ export default function ClinicianDashboard() {
                             <span className="clin-stat-trend">{s.trend}</span>
                         </div>
                         <div className="clin-stat-bar">
-                            <div className="clin-stat-bar-fill" style={{ width: `${Math.min(s.value * 20, 100)}%`, background: s.color, animationDelay: `${i * 100 + 300}ms` }} />
+                            <div className="clin-stat-bar-fill" style={{ width: `${Math.min(s.value * 15, 100)}%`, background: s.color }} />
                         </div>
                     </div>
                 ))}
             </div>
 
+
             {/* Quick Actions */}
-            <div className="clin-section">
+           <div className="clin-section">
                 <div className="clin-section-header">
                     <h2>Quick Actions</h2>
                     <span className="clin-section-sub">Navigate to key workflows</span>
                 </div>
                 <div className="clin-actions-grid">
                     {[
-                        { to: '/clinician/donors', icon: Icons.folderOpen, title: 'Manage Donors', desc: 'Review profiles, approve or suspend donor applications', color: '#10b981', badge: stats?.pendingDonors },
+                        { to: '/clinician/donors', icon: Icons.folderOpen, title: 'Manage Donors', desc: 'Review profiles, approve or suspend donor applications', color: '#10b981', badge: stats.pendingDonors + stats.pendingConsultations },
                         { to: '/clinician/recipients', icon: Icons.search, title: 'View Recipients', desc: 'Browse registered recipients and generate matches', color: '#8b5cf6', badge: null },
-                        { to: '/clinician/matches', icon: Icons.checkCircle, title: 'Review Matches', desc: 'Evaluate proposed pairings and make clinical decisions', color: '#06b6d4', badge: stats?.matchesForReview },
+                        { to: '/clinician/matches', icon: Icons.checkCircle, title: 'Review Matches', desc: 'Evaluate proposed pairings and make clinical decisions', color: '#06b6d4', badge: stats.matchesForReview },
                     ].map((a, i) => (
                         <Link key={i} to={a.to} className="clin-action-card" style={{ animationDelay: `${i * 100}ms` }}>
                             <div className="clin-action-icon" style={{ color: a.color, background: `${a.color}12` }}>
@@ -294,66 +338,6 @@ export default function ClinicianDashboard() {
                             {a.badge > 0 && <span className="clin-action-badge">{a.badge}</span>}
                         </Link>
                     ))}
-                </div>
-            </div>
-
-            {/* Activity Overview */}
-            <div className="clin-section">
-                <div className="clin-section-header">
-                    <h2>System Overview</h2>
-                    <span className="clin-section-sub">Current platform status</span>
-                </div>
-                <div className="clin-overview-grid">
-                    <div className="clin-overview-card">
-                        <h4>Donor Pipeline</h4>
-                        <div className="clin-pipeline">
-                            {[
-                                { label: 'Approved', count: stats?.activeDonors || 0, color: '#10b981' },
-                                { label: 'Pending', count: stats?.pendingDonors || 0, color: '#f59e0b' },
-                            ].map((p, i) => (
-                                <div key={i} className="clin-pipeline-item">
-                                    <div className="clin-pipeline-dot" style={{ background: p.color }} />
-                                    <span className="clin-pipeline-label">{p.label}</span>
-                                    <span className="clin-pipeline-count" style={{ color: p.color }}>{p.count}</span>
-                                </div>
-                            ))}
-                        </div>
-                        <svg className="clin-mini-chart" viewBox="0 0 200 50" preserveAspectRatio="none">
-                            <defs>
-                                <linearGradient id="clinGrad" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.2" />
-                                    <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
-                                </linearGradient>
-                            </defs>
-                            <path d="M0,40 Q25,35 50,30 T100,25 T150,20 T200,15 L200,50 L0,50 Z" fill="url(#clinGrad)" />
-                            <path d="M0,40 Q25,35 50,30 T100,25 T150,20 T200,15" fill="none" stroke="#10b981" strokeWidth="2" />
-                        </svg>
-                    </div>
-                    <div className="clin-overview-card">
-                        <h4>Match Activity</h4>
-                        <div className="clin-pipeline">
-                            {[
-                                { label: 'To Review', count: stats?.matchesForReview || 0, color: '#8b5cf6' },
-                                { label: 'Recipients', count: stats?.activeRecipients || 0, color: '#06b6d4' },
-                            ].map((p, i) => (
-                                <div key={i} className="clin-pipeline-item">
-                                    <div className="clin-pipeline-dot" style={{ background: p.color }} />
-                                    <span className="clin-pipeline-label">{p.label}</span>
-                                    <span className="clin-pipeline-count" style={{ color: p.color }}>{p.count}</span>
-                                </div>
-                            ))}
-                        </div>
-                        <svg className="clin-mini-chart" viewBox="0 0 200 50" preserveAspectRatio="none">
-                            <defs>
-                                <linearGradient id="clinGrad2" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.2" />
-                                    <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0" />
-                                </linearGradient>
-                            </defs>
-                            <path d="M0,35 Q30,30 60,32 T120,22 T180,18 L200,15 L200,50 L0,50 Z" fill="url(#clinGrad2)" />
-                            <path d="M0,35 Q30,30 60,32 T120,22 T180,18 L200,15" fill="none" stroke="#8b5cf6" strokeWidth="2" />
-                        </svg>
-                    </div>
                 </div>
             </div>
         </div>

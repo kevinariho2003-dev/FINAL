@@ -20,9 +20,14 @@ import DonorProfileForm from './pages/donor/DonorProfileForm';
 import DonorConsentForm from './pages/donor/DonorConsentForm';
 import DonorScreening from './pages/donor/DonorScreening';
 import DonorCycles from './pages/donor/DonorCycles';
+import DonorQuestionnaire from './pages/donor/DonorQuestionnaire';
+import Medications from './pages/donor/Medications';
+import Payments from './pages/donor/Payments';
+import Notifications from './pages/donor/Notifications';
 
 // Recipient pages
 import RecipientProfileForm from './pages/recipient/RecipientProfileForm';
+import RecipientConsentForm from './pages/recipient/RecipientConsentForm';
 import RecipientMatchList from './pages/recipient/RecipientMatchList';
 
 // Clinician pages
@@ -35,6 +40,8 @@ import ClinicianCycles from './pages/clinician/ClinicianCycles';
 import AdminUserManagement from './pages/admin/AdminUserManagement';
 import AdminMatchingConfig from './pages/admin/AdminMatchingConfig';
 import AdminAuditLogs from './pages/admin/AdminAuditLogs';
+import { Import } from 'lucide-react';
+
 
 /* ── Floating Background SVGs ── */
 function FloatingBackground() {
@@ -88,14 +95,21 @@ function AppRoutes() {
 
             {/* Donor */}
             <Route path="/donor/dashboard" element={<ProtectedRoute roles={['donor']}><DonorDashboard /></ProtectedRoute>} />
+            <Route path='/donor/questionnaire' element={<ProtectedRoute roles={['donor']}><DonorQuestionnaire/></ProtectedRoute>} />
             <Route path="/donor/profile" element={<ProtectedRoute roles={['donor']}><DonorProfileForm /></ProtectedRoute>} />
             <Route path="/donor/consents" element={<ProtectedRoute roles={['donor']}><DonorConsentForm /></ProtectedRoute>} />
             <Route path="/donor/screening" element={<ProtectedRoute roles={['donor']}><DonorScreening /></ProtectedRoute>} />
             <Route path="/donor/cycles" element={<ProtectedRoute roles={['donor']}><DonorCycles /></ProtectedRoute>} />
+            <Route path="donor/medications" element={<ProtectedRoute roles={['donor']}><Medications /></ProtectedRoute>} />
+            <Route path="donor/payments" element={<ProtectedRoute roles={['donor']}><Payments /></ProtectedRoute>} />
+            <Route path="donor/notifications" element={<ProtectedRoute roles={['donor']}><Notifications /></ProtectedRoute>} />
+
+            
 
             {/* Recipient */}
             <Route path="/recipient/dashboard" element={<ProtectedRoute roles={['recipient']}><RecipientDashboard /></ProtectedRoute>} />
             <Route path="/recipient/profile" element={<ProtectedRoute roles={['recipient']}><RecipientProfileForm /></ProtectedRoute>} />
+            <Route path="/consent" element={<ProtectedRoute roles={['recipient']}><RecipientConsentForm /></ProtectedRoute>} />
             <Route path="/recipient/matches" element={<ProtectedRoute roles={['recipient']}><RecipientMatchList /></ProtectedRoute>} />
 
             {/* Clinician */}

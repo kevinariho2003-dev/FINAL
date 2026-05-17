@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import '../Dashboard.css';
 import './DonorScreening.css';
@@ -189,6 +190,31 @@ export default function DonorScreening() {
                     <div className="empty-state-text">Complete your donor profile first</div>
                     <div className="empty-state-sub">You need to create a donor profile before uploading screening documents</div>
                 </div>
+            </div>
+        );
+    }
+
+    if (loading) return <div className="page-loader"><div className="spinner"></div></div>;
+
+    // Updated Gate Logic in DonorScreening.jsx
+    if (!profile) {
+        return (
+            <div className="page-center">
+                <ClipboardList size={48} />
+                <h3>Complete your donor profile first</h3>
+                <p>You need to create a donor profile before accessing appointments.</p>
+                <Link to="/donor/profile" className="btn btn-primary">Go to Profile</Link>
+            </div>
+        );
+    }
+
+    if (profile.status === 'pending') {
+        return (
+            <div className="page-center">
+                <Clock size={48} color="var(--accent)" />
+                <h3>Profile Verification in Progress</h3>
+                <p>Our clinicians are currently reviewing your medical profile. Appointments will be unlocked once verification is complete.</p>
+                <div className="badge badge-warning">Status: Waiting for Clinician</div>
             </div>
         );
     }
