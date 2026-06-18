@@ -1,26 +1,484 @@
-/* ══════════════════════════════════════════════
-   Donor Profile — Clinical Glass v2.0
-   ══════════════════════════════════════════════ */
+.donor-profile-page.dp-modern {
+    max-width: 1180px;
+    margin: 0 auto;
+    font-family: 'Inter', system-ui, sans-serif;
+}
 
-.donor-profile-page .card {
-    border-radius: var(--radius-xl);
+.dp-svg {
+    width: 1.1em;
+    height: 1.1em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex: 0 0 auto;
+}
+
+.dp-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1.25rem;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 1.35rem 1.45rem;
+    border: 1px solid #dbeafe;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 52%, #fdf2f8 100%);
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.07);
+}
+
+.dp-kicker {
+    margin: 0 0 0.35rem;
+    color: #0f766e;
+    font-size: 0.74rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.dp-hero h1 {
+    margin: 0 0 0.45rem;
+    color: var(--text-primary);
+    font-size: clamp(1.35rem, 2.3vw, 1.95rem);
+    font-weight: 900;
+    line-height: 1.1;
+}
+
+.dp-hero p:last-child {
+    max-width: 720px;
+    margin: 0;
+    color: #475569;
+    font-size: 0.93rem;
+    line-height: 1.55;
+}
+
+.dp-profile-state {
+    display: grid;
+    gap: 0.2rem;
+    justify-items: end;
+    padding: 0.85rem 1rem;
+    border: 1px solid #ccfbf1;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.78);
+}
+
+.dp-profile-state span {
+    color: #0f766e;
+    font-size: 0.74rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.dp-profile-state strong {
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.82rem;
+}
+
+.dp-step-tracker {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 1rem 0;
+}
+
+.dp-track-step {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+    padding: 0.85rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    background: #ffffff;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+}
+
+.dp-track-step.active {
+    border-color: #38bdf8;
+    background: #f0f9ff;
+}
+
+.dp-track-step.complete {
+    border-color: #99f6e4;
+    background: #f0fdfa;
+}
+
+.dp-track-index {
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    border-radius: 12px;
+    background: #e0f2fe;
+    color: #0369a1;
+    font-size: 0.78rem;
+    font-weight: 900;
+}
+
+.dp-track-step.complete .dp-track-index {
+    background: #14b8a6;
+    color: #ffffff;
+}
+
+.dp-track-copy {
+    display: grid;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.dp-track-copy strong {
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    line-height: 1.2;
+}
+
+.dp-track-copy span {
+    color: #64748b;
+    font-size: 0.72rem;
+    line-height: 1.35;
+}
+
+.dp-profile-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 1rem;
+    align-items: start;
+}
+
+.dp-carousel-card,
+.dp-photo-panel {
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.07);
+}
+
+.dp-carousel-card {
+    overflow: hidden;
+}
+
+.dp-card-header-modern {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 1.15rem 1.25rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.dp-card-icon {
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.dp-card-icon .dp-svg {
+    width: 22px;
+    height: 22px;
+}
+
+.dp-card-header-modern span {
+    color: #0f766e;
+    font-size: 0.72rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.dp-card-header-modern h2 {
+    margin: 0.12rem 0 0;
+    color: var(--text-primary);
+    font-size: 1.05rem;
+    font-weight: 900;
+}
+
+.dp-swipe-window {
+    min-height: 360px;
+    padding: 1.25rem;
+}
+
+.dp-step-pane {
+    animation: dpSlideIn 0.24s ease both;
+}
+
+@keyframes dpSlideIn {
+    from { opacity: 0; transform: translateX(18px); }
+    to { opacity: 1; transform: translateX(0); }
 }
 
 .donor-profile-page .form-row {
-    gap: 1.25rem;
-}
-
-.donor-profile-page h2 {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 1rem;
-    letter-spacing: -0.01em;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
 }
 
 .donor-profile-page .form-group {
-    margin-bottom: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.donor-profile-page .form-input,
+.donor-profile-page .form-select {
+    min-height: 46px;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.donor-profile-page .form-input:focus,
+.donor-profile-page .form-select:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.14);
+}
+
+.dp-carousel-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-top: 1px solid #e2e8f0;
+    background: #ffffff;
+}
+
+.dp-nav-btn,
+.dp-primary-btn {
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.72rem 1rem;
+    border-radius: 12px;
+    font-size: 0.86rem;
+    font-weight: 900;
+    cursor: pointer;
+    transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.dp-nav-btn {
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #475569;
+}
+
+.dp-primary-btn {
+    border: 0;
+    background: #0ea5e9;
+    color: #ffffff;
+    box-shadow: 0 10px 22px rgba(14, 165, 233, 0.16);
+}
+
+.dp-primary-btn.is-created {
+    background: #10b981;
+}
+
+.dp-nav-btn:hover,
+.dp-primary-btn:hover {
+    transform: translateY(-1px);
+}
+
+.dp-nav-btn:disabled,
+.dp-primary-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.58;
+    transform: none;
+}
+
+.dp-photo-panel {
+    position: sticky;
+    top: 88px;
+    display: grid;
+    gap: 1rem;
+    padding: 1.15rem;
+}
+
+.dp-photo-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.dp-photo-head > .dp-svg {
+    width: 26px;
+    height: 26px;
+    color: #0ea5e9;
+}
+
+.dp-photo-head h2 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 900;
+}
+
+.dp-photo-head p {
+    margin: 0.25rem 0 0;
+    color: #64748b;
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
+.donor-photo-container {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    max-height: 260px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    border: 2px dashed #bae6fd;
+    border-radius: 18px;
+    background: #f0f9ff;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.donor-photo-container:hover {
+    border-color: #38bdf8;
+    background: #e0f2fe;
+    transform: translateY(-1px);
+}
+
+.donor-photo-container.disabled {
+    cursor: not-allowed;
+    opacity: 0.76;
+}
+
+.donor-photo-container.uploading {
+    opacity: 0.75;
+    pointer-events: none;
+}
+
+.donor-photo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.donor-photo-placeholder {
+    display: grid;
+    gap: 0.55rem;
+    justify-items: center;
+    padding: 1rem;
+}
+
+.donor-photo-svg {
+    width: 46px;
+    height: 46px;
+    color: #0ea5e9;
+}
+
+.donor-photo-text {
+    color: #475569;
+    font-size: 0.82rem;
+    font-weight: 850;
+    line-height: 1.25;
+    text-align: center;
+}
+
+.donor-photo-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15, 23, 42, 0.48);
+}
+
+.donor-photo-edit-badge {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ffffff;
+    border-radius: 999px;
+    background: #0ea5e9;
+    color: #ffffff;
+    box-shadow: 0 6px 16px rgba(14, 165, 233, 0.28);
+}
+
+.donor-photo-hint {
+    margin: 0;
+    color: #475569;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.donor-photo-specs {
+    margin: -0.4rem 0 0;
+    color: #64748b;
+    font-size: 0.75rem;
+    font-weight: 850;
+}
+
+@media (max-width: 980px) {
+    .dp-profile-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .dp-photo-panel {
+        position: static;
+        grid-template-columns: minmax(0, 1fr) 180px;
+        align-items: center;
+    }
+
+    .donor-photo-container {
+        max-height: none;
+    }
+}
+
+@media (max-width: 720px) {
+    .donor-profile-page.dp-modern {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .dp-hero,
+    .dp-photo-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .dp-profile-state {
+        justify-items: start;
+    }
+
+    .dp-step-tracker {
+        grid-template-columns: 1fr;
+    }
+
+    .donor-profile-page .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .dp-swipe-window {
+        min-height: 0;
+        padding: 1rem;
+    }
+
+    .dp-carousel-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .dp-nav-btn,
+    .dp-primary-btn {
+        width: 100%;
+    }
 }

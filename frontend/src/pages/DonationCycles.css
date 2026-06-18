@@ -215,3 +215,176 @@
     from { opacity: 0; }
     to { opacity: 1; }
 }
+
+/* Donor cycles modern overlay */
+.donor-cycles-page {
+    max-width: 1180px;
+    margin: 0 auto;
+}
+
+.cycle-svg {
+    width: 1.1em;
+    height: 1.1em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex: 0 0 auto;
+}
+
+.cycles-hero {
+    padding: 1.4rem 1.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid #dbeafe;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 52%, #fdf2f8 100%);
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.07);
+}
+
+.cycles-kicker {
+    margin: 0 0 0.35rem;
+    color: #0f766e;
+    font-size: 0.74rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.cycles-hero h1 {
+    margin: 0 0 0.4rem;
+    color: var(--text-primary);
+    font-size: clamp(1.35rem, 2vw, 1.9rem);
+    font-weight: 900;
+}
+
+.cycles-hero p {
+    margin: 0;
+    color: #475569;
+    font-size: 0.93rem;
+}
+
+.cycles-stats {
+    margin-bottom: 1rem;
+}
+
+.donor-cycles-page .stat-icon,
+.donor-cycles-page .stat-number {
+    color: #0ea5e9;
+    background: none !important;
+    -webkit-text-fill-color: currentColor !important;
+}
+
+.cycle-section {
+    margin-top: 1.25rem;
+}
+
+.cycle-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-bottom: 0.85rem;
+}
+
+.cycle-section-title span {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: #f59e0b;
+    box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.12);
+}
+
+.cycle-section-title h2 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 900;
+}
+
+.donor-cycles-page .cycle-card {
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    background: #ffffff;
+    color: inherit;
+    text-align: left;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.07);
+}
+
+.donor-cycles-page .cycle-card:hover {
+    border-color: #bae6fd;
+}
+
+.donor-cycles-page .cycle-avatar {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.donor-cycles-page .cycle-avatar .cycle-svg {
+    width: 20px;
+    height: 20px;
+}
+
+.cycle-detail-value.muted {
+    color: #64748b;
+}
+
+.cycle-detail-value.mono {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+.cycle-expanded {
+    margin-top: 1rem;
+}
+
+.meds-grid {
+    display: grid;
+    gap: 0.65rem;
+}
+
+.med-card {
+    display: grid;
+    gap: 0.3rem;
+    padding: 0.8rem;
+    border: 1px solid #e0e7ff;
+    border-radius: 14px;
+    background: #f8fafc;
+}
+
+.med-card strong {
+    color: var(--text-primary);
+    font-size: 0.88rem;
+}
+
+.med-card span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #64748b;
+    font-size: 0.78rem;
+}
+
+.cycle-toggle {
+    display: block;
+    margin-top: 0.85rem;
+    color: #0ea5e9;
+    font-size: 0.76rem;
+    font-weight: 850;
+    text-align: center;
+}
+
+.cycles-empty-card {
+    border-radius: 20px;
+}
+
+@media (max-width: 640px) {
+    .donor-cycles-page {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .donor-cycles-page .cycle-header {
+        gap: 0.75rem;
+        flex-direction: column;
+    }
+}

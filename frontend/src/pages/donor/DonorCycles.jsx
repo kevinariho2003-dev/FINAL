@@ -1,11 +1,27 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 import '../Dashboard.css';
 import '../DonationCycles.css';
 
+function SvgIcon({ name, className = '' }) {
+    const paths = {
+        cycle: 'M3 12a9 9 0 0 1 15.5-6.2L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.2L3 16m0 5v-5h5',
+        clock: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zm0-14v5l3 2',
+        check: 'M20 6 9 17l-5-5',
+        card: 'M3 7h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7zm0 4h18',
+        pill: 'M10 21 3 14a5 5 0 0 1 7-7l7 7a5 5 0 0 1-7 7zM7 10l7 7',
+        syringe: 'm18 2 4 4M17 7l-9 9-4 1 1-4 9-9m-2 2 6 6',
+        calendar: 'M8 2v4m8-4v4M3 10h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z',
+        user: 'M20 21a8 8 0 0 0-16 0 M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10z',
+    };
+    return (
+        <svg className={`cycle-svg ${className}`} viewBox="0 0 24 24" aria-hidden="true">
+            <path d={paths[name]} />
+        </svg>
+    );
+}
+
 export default function DonorCycles() {
-    const { user } = useAuth();
     const [cycles, setCycles] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -14,14 +30,17 @@ export default function DonorCycles() {
             try {
                 const res = await api.get('/donation-cycles');
                 setCycles(res.data?.data || res.data || []);
-            } catch { /* ignore */ }
-            finally { setLoading(false); }
+            } catch {
+                /* ignore */
+            } finally {
+                setLoading(false);
+            }
         };
         fetchCycles();
     }, []);
 
     const formatDate = (d) => {
-        if (!d) return '—';
+        if (!d) return '-';
         return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     };
 
@@ -31,48 +50,32 @@ export default function DonorCycles() {
     const completedCycles = cycles.filter(c => c.outcome !== 'pending');
 
     return (
-        <div className="page">
-            <div className="page-header fade-in">
-                <h1 className="page-title">My Donation Cycles 🔄</h1>
-                <p className="page-subtitle">Track your egg donation procedures, medications, and compensation</p>
-            </div>
+        <div className="page donor-cycles-page">
+            <section className="cycles-hero">
+                <p className="cycles-kicker">Donation cycles</p>
+                <h1>My Donation Cycles</h1>
+                <p>Track procedures, medication plans, retrieval details, and compensation in one place.</p>
+            </section>
 
-            {/* Stats */}
-            <div className="donor-stats-row" style={{ marginBottom: '1rem' }}>
-                <div className="donor-stat fade-in fade-in-delay-1">
-                    <div className="stat-icon">🔄</div>
-                    <div className="stat-number" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-                        {cycles.length}
+            <div className="donor-stats-row cycles-stats">
+                {[
+                    { icon: 'cycle', value: cycles.length, label: 'Total Cycles' },
+                    { icon: 'clock', value: activeCycles.length, label: 'Active' },
+                    { icon: 'check', value: cycles.filter(c => c.outcome === 'successful').length, label: 'Successful' },
+                    { icon: 'card', value: cycles.filter(c => (c.payments || []).some(p => p.payment_status === 'completed')).length, label: 'Paid' },
+                ].map(stat => (
+                    <div className="donor-stat" key={stat.label}>
+                        <div className="stat-icon"><SvgIcon name={stat.icon} /></div>
+                        <div className="stat-number">{stat.value}</div>
+                        <div className="stat-desc">{stat.label}</div>
                     </div>
-                    <div className="stat-desc">Total Cycles</div>
-                </div>
-                <div className="donor-stat fade-in fade-in-delay-2">
-                    <div className="stat-icon">⏳</div>
-                    <div className="stat-number" style={{ background: 'linear-gradient(135deg, #f59e0b, #fbbf24)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-                        {activeCycles.length}
-                    </div>
-                    <div className="stat-desc">Active</div>
-                </div>
-                <div className="donor-stat fade-in fade-in-delay-3">
-                    <div className="stat-icon">✅</div>
-                    <div className="stat-number" style={{ background: 'linear-gradient(135deg, #10b981, #34d399)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-                        {cycles.filter(c => c.outcome === 'successful').length}
-                    </div>
-                    <div className="stat-desc">Successful</div>
-                </div>
-                <div className="donor-stat fade-in fade-in-delay-4">
-                    <div className="stat-icon">💰</div>
-                    <div className="stat-number" style={{ background: 'linear-gradient(135deg, #14b8a6, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-                        {cycles.filter(c => c.payment?.payment_status === 'completed').length}
-                    </div>
-                    <div className="stat-desc">Paid</div>
-                </div>
+                ))}
             </div>
 
             {cycles.length === 0 ? (
-                <div className="card fade-in">
+                <div className="card cycles-empty-card">
                     <div className="empty-state">
-                        <div className="empty-state-icon">🔄</div>
+                        <div className="empty-state-icon"><SvgIcon name="cycle" /></div>
                         <div className="empty-state-text">No donation cycles yet</div>
                         <div className="empty-state-sub">
                             Once you are matched and approved, your clinician will initiate a donation cycle for you.
@@ -81,33 +84,11 @@ export default function DonorCycles() {
                 </div>
             ) : (
                 <>
-                    {/* Active Cycles */}
                     {activeCycles.length > 0 && (
-                        <div style={{ marginBottom: '2rem' }}>
-                            <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#f59e0b', display: 'inline-block', animation: 'pulse 2s infinite' }}></span>
-                                Active Cycles
-                            </h2>
-                            <div className="cycles-grid">
-                                {activeCycles.map((cycle, i) => (
-                                    <CycleCard key={cycle.id} cycle={cycle} formatDate={formatDate} index={i} />
-                                ))}
-                            </div>
-                        </div>
+                        <CycleSection title="Active Cycles" active cycles={activeCycles} formatDate={formatDate} />
                     )}
-
-                    {/* Completed Cycles */}
                     {completedCycles.length > 0 && (
-                        <div>
-                            <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--text-primary)' }}>
-                                Completed Cycles
-                            </h2>
-                            <div className="cycles-grid">
-                                {completedCycles.map((cycle, i) => (
-                                    <CycleCard key={cycle.id} cycle={cycle} formatDate={formatDate} index={i} />
-                                ))}
-                            </div>
-                        </div>
+                        <CycleSection title="Completed Cycles" cycles={completedCycles} formatDate={formatDate} />
                     )}
                 </>
             )}
@@ -115,20 +96,42 @@ export default function DonorCycles() {
     );
 }
 
+function CycleSection({ title, active = false, cycles, formatDate }) {
+    return (
+        <section className="cycle-section">
+            <div className="cycle-section-title">
+                {active && <span />}
+                <h2>{title}</h2>
+            </div>
+            <div className="cycles-grid">
+                {cycles.map((cycle, index) => (
+                    <CycleCard key={cycle.id} cycle={cycle} formatDate={formatDate} index={index} />
+                ))}
+            </div>
+        </section>
+    );
+}
+
 function CycleCard({ cycle, formatDate, index }) {
     const [expanded, setExpanded] = useState(false);
+    const initialPay = cycle.payments?.find(p => p.payment_stage === 'initial');
+    const finalPay = cycle.payments?.find(p => p.payment_stage === 'final');
 
     return (
-        <div className={`cycle-card ${cycle.outcome} fade-in`} style={{ animationDelay: `${index * 60}ms`, cursor: 'pointer' }} onClick={() => setExpanded(!expanded)}>
-            {/* Header */}
+        <button
+            type="button"
+            className={`cycle-card ${cycle.outcome}`}
+            style={{ animationDelay: `${index * 60}ms` }}
+            onClick={() => setExpanded(!expanded)}
+        >
             <div className="cycle-header">
                 <div className="cycle-pair">
                     <div className="cycle-avatar recipient">
-                        {cycle.recipient?.user?.first_name?.[0]}{cycle.recipient?.user?.last_name?.[0]}
+                        <SvgIcon name="user" />
                     </div>
                     <div className="cycle-pair-info">
                         <span className="cycle-pair-name">
-                            Paired with {cycle.recipient?.user?.first_name} {cycle.recipient?.user?.last_name}
+                            Paired with {cycle.recipient?.recipient_code || `RC-${String(cycle.recipient_id).padStart(6, '0')}`}
                         </span>
                         <span className="cycle-pair-label">Recipient</span>
                     </div>
@@ -136,93 +139,86 @@ function CycleCard({ cycle, formatDate, index }) {
                 <span className={`badge badge-${cycle.outcome}`}>{cycle.outcome}</span>
             </div>
 
-            {/* Details */}
             <div className="cycle-detail-grid">
+                <Detail label="Start Date" value={formatDate(cycle.start_date)} />
+                <Detail label="End Date" value={formatDate(cycle.end_date)} />
+                <Detail label="Eggs Retrieved" value={cycle.eggs_retrieved ?? '-'} />
                 <div className="cycle-detail">
-                    <span className="cycle-detail-label">Start Date</span>
-                    <span className="cycle-detail-value">{formatDate(cycle.start_date)}</span>
-                </div>
-                <div className="cycle-detail">
-                    <span className="cycle-detail-label">End Date</span>
-                    <span className="cycle-detail-value">{formatDate(cycle.end_date)}</span>
-                </div>
-                <div className="cycle-detail">
-                    <span className="cycle-detail-label">Eggs Retrieved</span>
-                    <span className="cycle-detail-value">{cycle.eggs_retrieved ?? '—'}</span>
-                </div>
-                <div className="cycle-detail">
-                    <span className="cycle-detail-label">Compensation</span>
-                    {cycle.payment ? (
-                        <span className={`payment-badge ${cycle.payment.payment_status}`}>
-                            UGX {Number(cycle.payment.amount).toLocaleString()} · {cycle.payment.payment_status}
+                    <span className="cycle-detail-label">Initial Pay (50%)</span>
+                    {initialPay ? (
+                        <span className={`payment-badge ${initialPay.payment_status}`}>
+                            UGX {Number(initialPay.amount).toLocaleString()} - {initialPay.payment_status}
                         </span>
                     ) : (
-                        <span className="cycle-detail-value" style={{ color: 'var(--text-muted)' }}>Pending</span>
+                        <span className="cycle-detail-value muted">Pending</span>
+                    )}
+                </div>
+                <div className="cycle-detail">
+                    <span className="cycle-detail-label">Final Pay (50%)</span>
+                    {finalPay ? (
+                        <span className={`payment-badge ${finalPay.payment_status}`}>
+                            UGX {Number(finalPay.amount).toLocaleString()} - {finalPay.payment_status}
+                        </span>
+                    ) : (
+                        <span className="cycle-detail-value muted">Pending</span>
                     )}
                 </div>
             </div>
 
-            {/* Expanded: Medications */}
-            {expanded && cycle.medications?.length > 0 && (
-                <div className="meds-section">
-                    <div className="meds-title">💊 Your Medications ({cycle.medications.length})</div>
-                    <div style={{ display: 'grid', gap: '0.5rem' }}>
-                        {cycle.medications.map(med => (
-                            <div key={med.id} style={{
-                                background: 'rgba(99, 102, 241, 0.05)',
-                                border: '1px solid rgba(99, 102, 241, 0.1)',
-                                borderRadius: '0.75rem',
-                                padding: '0.6rem 0.85rem',
-                            }}>
-                                <div style={{ fontWeight: 600, fontSize: '0.88rem', marginBottom: '0.2rem' }}>{med.drug_name}</div>
-                                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                                    <span>💉 {med.dosage}</span>
-                                    <span>🕐 {med.frequency}</span>
-                                    <span>📅 {med.duration}</span>
-                                </div>
+            {expanded && (
+                <div className="cycle-expanded">
+                    <div className="meds-section">
+                        <div className="meds-title"><SvgIcon name="pill" /> Medications</div>
+                        {cycle.medications?.length > 0 ? (
+                            <div className="meds-grid">
+                                {cycle.medications.map(med => (
+                                    <div key={med.id} className="med-card">
+                                        <strong>{med.drug_name}</strong>
+                                        <span><SvgIcon name="syringe" /> {med.dosage}</span>
+                                        <span><SvgIcon name="clock" /> {med.frequency}</span>
+                                        <span><SvgIcon name="calendar" /> {med.duration}</span>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
+                        ) : (
+                            <p>No medications prescribed yet.</p>
+                        )}
                     </div>
+
+                    {cycle.payments && cycle.payments.length > 0 && (
+                        <div className="meds-section">
+                            <div className="meds-title"><SvgIcon name="card" /> Compensation Payments</div>
+                            <div className="meds-grid">
+                                {cycle.payments.filter(p => p.payment_stage !== 'service_fee').map(pay => (
+                                    <div key={pay.id} className="med-card" style={{ borderLeft: pay.payment_status === 'completed' ? '4px solid #10b981' : '4px solid #f59e0b', paddingLeft: '1rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <strong>{pay.payment_stage === 'initial' ? 'Initial Compensation (50%)' : pay.payment_stage === 'final' ? 'Final Compensation (50%)' : 'Compensation'}</strong>
+                                            <span className={`payment-badge ${pay.payment_status}`}>{pay.payment_status}</span>
+                                        </div>
+                                        <div className="cycle-detail-grid" style={{ marginTop: '0.5rem', marginBottom: 0 }}>
+                                            <Detail label="Reference" value={pay.reference_number} mono />
+                                            <Detail label="Method" value={pay.payment_method?.replace('_', ' ') || '-'} />
+                                            <Detail label="Amount" value={`UGX ${Number(pay.amount).toLocaleString()}`} />
+                                            <Detail label="Payment Date" value={formatDate(pay.payment_date)} />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
-            {expanded && (!cycle.medications || cycle.medications.length === 0) && (
-                <div className="meds-section">
-                    <div className="meds-title">💊 Medications</div>
-                    <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>No medications prescribed yet</p>
-                </div>
-            )}
+            <span className="cycle-toggle">{expanded ? 'Click to collapse' : 'Click for details'}</span>
+        </button>
+    );
+}
 
-            {/* Payment Details (expanded) */}
-            {expanded && cycle.payment && (
-                <div className="meds-section" style={{ borderTop: '1px solid var(--border)', paddingTop: '0.75rem', marginTop: '0.75rem' }}>
-                    <div className="meds-title">💳 Payment Details</div>
-                    <div className="cycle-detail-grid" style={{ marginBottom: 0 }}>
-                        <div className="cycle-detail">
-                            <span className="cycle-detail-label">Reference</span>
-                            <span className="cycle-detail-value" style={{ fontFamily: 'monospace', fontSize: '0.82rem' }}>{cycle.payment.reference_number}</span>
-                        </div>
-                        <div className="cycle-detail">
-                            <span className="cycle-detail-label">Method</span>
-                            <span className="cycle-detail-value" style={{ textTransform: 'capitalize' }}>{cycle.payment.payment_method?.replace('_', ' ')}</span>
-                        </div>
-                        <div className="cycle-detail">
-                            <span className="cycle-detail-label">Amount</span>
-                            <span className="cycle-detail-value" style={{ fontWeight: 700 }}>UGX {Number(cycle.payment.amount).toLocaleString()}</span>
-                        </div>
-                        <div className="cycle-detail">
-                            <span className="cycle-detail-label">Payment Date</span>
-                            <span className="cycle-detail-value">{formatDate(cycle.payment.payment_date)}</span>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            <div style={{ textAlign: 'center', marginTop: '0.5rem' }}>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                    {expanded ? 'Click to collapse ▲' : 'Click for details ▼'}
-                </span>
-            </div>
+function Detail({ label, value, mono = false }) {
+    return (
+        <div className="cycle-detail">
+            <span className="cycle-detail-label">{label}</span>
+            <span className={`cycle-detail-value ${mono ? 'mono' : ''}`}>{value}</span>
         </div>
     );
 }

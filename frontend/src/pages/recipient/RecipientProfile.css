@@ -1,0 +1,326 @@
+.recipient-profile-page.rp-modern {
+    max-width: 860px;
+    margin: 0 auto;
+    font-family: 'Inter', system-ui, sans-serif;
+}
+
+.rp-svg {
+    width: 1.1em;
+    height: 1.1em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex: 0 0 auto;
+}
+
+.rp-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1.25rem;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 1.35rem 1.45rem;
+    border: 1px solid #e0e7ff;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #ffffff 0%, #f5f3ff 52%, #fdf4ff 100%);
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.07);
+}
+
+.rp-kicker {
+    margin: 0 0 0.35rem;
+    color: #4f46e5;
+    font-size: 0.74rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.rp-hero h1 {
+    margin: 0 0 0.45rem;
+    color: var(--text-primary);
+    font-size: clamp(1.35rem, 2.3vw, 1.95rem);
+    font-weight: 900;
+    line-height: 1.1;
+}
+
+.rp-hero p:last-child {
+    max-width: 720px;
+    margin: 0;
+    color: #475569;
+    font-size: 0.93rem;
+    line-height: 1.55;
+}
+
+.rp-profile-state {
+    display: grid;
+    gap: 0.2rem;
+    justify-items: end;
+    padding: 0.85rem 1rem;
+    border: 1px solid #ddd6fe;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.78);
+}
+
+.rp-profile-state span {
+    color: #6d28d9;
+    font-size: 0.74rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.rp-profile-state strong {
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.82rem;
+}
+
+.rp-step-tracker {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 1rem 0;
+}
+
+.rp-track-step {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+    padding: 0.85rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    background: #ffffff;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+}
+
+.rp-track-step.active {
+    border-color: #818cf8;
+    background: #f5f3ff;
+}
+
+.rp-track-step.complete {
+    border-color: #ddd6fe;
+    background: #faf5ff;
+}
+
+.rp-track-index {
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    border-radius: 12px;
+    background: #e0e7ff;
+    color: #4338ca;
+    font-size: 0.78rem;
+    font-weight: 900;
+}
+
+.rp-track-step.complete .rp-track-index {
+    background: #8b5cf6;
+    color: #ffffff;
+}
+
+.rp-track-copy {
+    display: grid;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.rp-track-copy strong {
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    line-height: 1.2;
+}
+
+.rp-track-copy span {
+    color: #64748b;
+    font-size: 0.72rem;
+    line-height: 1.35;
+}
+
+.rp-carousel-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.07);
+    overflow: hidden;
+}
+
+.rp-card-header-modern {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 1.15rem 1.25rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.rp-card-icon {
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: #ede9fe;
+    color: #6d28d9;
+}
+
+.rp-card-icon .rp-svg {
+    width: 22px;
+    height: 22px;
+}
+
+.rp-card-header-modern span {
+    color: #4f46e5;
+    font-size: 0.72rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.rp-card-header-modern h2 {
+    margin: 0.12rem 0 0;
+    color: var(--text-primary);
+    font-size: 1.05rem;
+    font-weight: 900;
+}
+
+.rp-swipe-window {
+    min-height: 320px;
+    padding: 1.25rem;
+}
+
+.rp-step-pane {
+    animation: rpSlideIn 0.24s ease both;
+}
+
+@keyframes rpSlideIn {
+    from { opacity: 0; transform: translateX(18px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.recipient-profile-page .form-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.recipient-profile-page .form-group {
+    margin-bottom: 1rem;
+}
+
+.recipient-profile-page .form-input,
+.recipient-profile-page .form-select,
+.recipient-profile-page .form-textarea {
+    min-height: 46px;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.recipient-profile-page .form-input:focus,
+.recipient-profile-page .form-select:focus,
+.recipient-profile-page .form-textarea:focus {
+    border-color: #818cf8;
+    box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.14);
+}
+
+.rp-carousel-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-top: 1px solid #e2e8f0;
+    background: #ffffff;
+}
+
+.rp-nav-btn,
+.rp-primary-btn {
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.72rem 1rem;
+    border-radius: 12px;
+    font-size: 0.86rem;
+    font-weight: 900;
+    cursor: pointer;
+    transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.rp-nav-btn {
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #475569;
+}
+
+.rp-primary-btn {
+    border: 0;
+    background: #6366f1;
+    color: #ffffff;
+    box-shadow: 0 10px 22px rgba(99, 102, 241, 0.16);
+}
+
+.rp-primary-btn.is-created {
+    background: #10b981;
+}
+
+.rp-nav-btn:hover,
+.rp-primary-btn:hover {
+    transform: translateY(-1px);
+}
+
+.rp-nav-btn:disabled,
+.rp-primary-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.58;
+    transform: none;
+}
+
+@media (max-width: 720px) {
+    .recipient-profile-page.rp-modern {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .rp-hero {
+        grid-template-columns: 1fr;
+    }
+
+    .rp-profile-state {
+        justify-items: start;
+    }
+
+    .rp-step-tracker {
+        grid-template-columns: 1fr;
+    }
+
+    .recipient-profile-page .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .rp-swipe-window {
+        min-height: 0;
+        padding: 1rem;
+    }
+
+    .rp-carousel-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .rp-nav-btn,
+    .rp-primary-btn {
+        width: 100%;
+    }
+}

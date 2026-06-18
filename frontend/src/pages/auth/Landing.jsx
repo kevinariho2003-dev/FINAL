@@ -169,6 +169,17 @@ export default function Landing() {
 
     return (
         <div className="landing-page">
+            <header className="landing-topbar">
+                <Link to="/" className="landing-brand" aria-label="EDRMS home">
+                    <img src="/images/brand/logo.png" alt="EDRMS" className="landing-brand-logo" />
+                    <span style={{ fontSize: '1.2rem', fontWeight: 800 }}>Egg Donor–Recipient Match System</span>
+                </Link>
+                <nav className="landing-topbar-actions" aria-label="Public navigation">
+                    <Link to="/login">Sign In</Link>
+                    <Link to="/register" className="landing-topbar-primary">Get Started</Link>
+                </nav>
+            </header>
+
             {/* ── Background Image Slider (pushed behind overlay) ── */}
             <div className="hero-visual">
                 <div className="hero-image-slider">
@@ -190,7 +201,6 @@ export default function Landing() {
             {/* ── Hero Section ── */}
             <section className="landing-hero">
                 <div className="hero-content" style={{ transform: `translateY(${scrollY * 0.3}px)` }}>
-                    <div className="hero-badge">🧬 Egg Donor–Recipient Match System</div>
                     <h1 className="hero-title">
                         <span className="hero-title-line">Connecting</span>
                         <span className="hero-title-gradient">Donors & Recipients</span>
@@ -262,10 +272,10 @@ export default function Landing() {
                 </div>
                 <div className="how-steps">
                     {[
-                        { num: '01', title: 'Register', desc: 'Create your account and select your role in the system.', icon: '📝' },
-                        { num: '02', title: 'Build Profile', desc: 'Fill in medical, genetic, and personal details for accurate matching.', icon: '🧪' },
-                        { num: '03', title: 'Consent', desc: 'Digitally sign and manage consent forms with full transparency.', icon: '✅' },
-                        { num: '04', title: 'Match', desc: 'Our MCDA engine generates scored matches for clinician review.', icon: '🔗' },
+                        { num: '01', title: 'Register', desc: 'Create your account and select your role in the system.', icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> },
+                        { num: '02', title: 'Build Profile', desc: 'Fill in medical, genetic, and personal details for accurate matching.', icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 2v7.31"/><path d="M14 9.3V1.99"/><path d="M8.5 2h7"/><path d="M14 9.3a6.5 6.5 0 1 1-4 0"/><path d="M5.5 13h13"/></svg> },
+                        { num: '03', title: 'Consent', desc: 'Digitally sign and manage consent forms with full transparency.', icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> },
+                        { num: '04', title: 'Match', desc: 'Our MCDA engine generates scored matches for clinician review.', icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> },
                     ].map((step, i) => (
                         <div key={i} className="how-step" style={{ animationDelay: `${i * 200}ms` }}>
                             <div className="how-step-number">{step.num}</div>
@@ -301,10 +311,10 @@ export default function Landing() {
             <footer className="landing-footer">
                 <div className="footer-content">
                     <div className="footer-top">
-                        <div className="footer-brand">
-                            <img src="/images/brand/logo.png" alt="EDRMS" style={{ height: 36, borderRadius: 8, objectFit: 'contain' }} />
-                            <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#111827' }}>EDRMS</span>
-                        </div>
+                        <Link to="/" className="landing-brand" aria-label="EDRMS home">
+                            <img src="/images/brand/logo.png" alt="EDRMS" className="landing-brand-logo" style={{ height: 36, borderRadius: 8, objectFit: 'contain' }} />
+                            <span style={{ fontSize: '1.2rem', fontWeight: 800 }}>Egg Donor–Recipient Match System</span>
+                        </Link>
                         <p style={{ color: '#6b7280', fontSize: '0.88rem', maxWidth: 320, lineHeight: 1.6 }}>
                             Uganda's leading egg donor–recipient matching platform. Connecting donors, recipients, and clinicians with intelligent, ethical matching.
                         </p>

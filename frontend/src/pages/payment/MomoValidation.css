@@ -1,0 +1,323 @@
+.flw-momo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100vw;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #1e293b;
+    padding: 20px;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+    overflow-y: auto;
+}
+
+.flw-momo-card {
+    background: #ffffff;
+    width: 100%;
+    max-width: 440px;
+    border-radius: 16px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+/* Header */
+.flw-momo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+}
+
+.flw-brand {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #0c1a30;
+    letter-spacing: -0.5px;
+}
+
+.flw-brand-accent {
+    color: #f5a623;
+}
+
+.flw-security {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #10b981;
+    background: #ecfdf5;
+    padding: 4px 8px;
+    border-radius: 100px;
+}
+
+/* Summary Box */
+.flw-momo-summary {
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.flw-summary-label {
+    font-size: 0.82rem;
+    color: #64748b;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.flw-summary-amount {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+}
+
+.flw-summary-ref {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    margin-top: 6px;
+    font-family: monospace;
+}
+
+/* Network Provider */
+.flw-momo-provider {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+}
+
+.flw-momo-network {
+    display: flex;
+    gap: 8px;
+}
+
+.flw-network-badge {
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+}
+
+.flw-network-badge.mtn {
+    background: #ffcc00;
+    color: #000000;
+}
+
+.flw-network-badge.airtel {
+    background: #e11d48;
+    color: #ffffff;
+}
+
+.flw-momo-type {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+/* Prompt info text */
+.flw-momo-prompt {
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: #475569;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.flw-secured-label {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    font-weight: 600;
+    margin-top: 8px;
+    text-transform: uppercase;
+}
+
+/* OTP Digits Panel */
+.flw-momo-otp-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 28px;
+}
+
+.flw-otp-label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #475569;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.flw-digits-grid {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    width: 100%;
+}
+
+.flw-digit-input {
+    width: 48px;
+    height: 52px;
+    border: 2px solid #cbd5e1;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #0f172a;
+    transition: all 150ms ease;
+}
+
+.flw-digit-input:focus {
+    outline: none;
+    border-color: #f5a623;
+    box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.25);
+}
+
+.flw-digit-input:disabled {
+    background: #f8fafc;
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+.flw-error {
+    color: #ef4444;
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+/* Dev Peek options */
+.flw-dev-peek {
+    margin-top: 16px;
+    padding: 8px 12px;
+    background: #fef3c7;
+    border: 1px dashed #f59e0b;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    color: #b45309;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    justify-content: space-between;
+    box-sizing: border-box;
+}
+
+.flw-peek-btn {
+    background: #d97706;
+    color: #ffffff;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 150ms;
+}
+
+.flw-peek-btn:hover {
+    background: #b45309;
+}
+
+/* Actions */
+.flw-momo-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.flw-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 200ms ease;
+    border: none;
+    box-sizing: border-box;
+}
+
+.flw-btn-pay {
+    background: #f5a623;
+    color: #ffffff;
+    box-shadow: 0 4px 10px rgba(245, 166, 35, 0.25);
+}
+
+.flw-btn-pay:hover:not(:disabled) {
+    background: #e09214;
+    transform: translateY(-1px);
+}
+
+.flw-btn-pay:disabled {
+    background: #cbd5e1;
+    color: #94a3b8;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.flw-btn-cancel {
+    background: #ffffff;
+    color: #64748b;
+    border: 1px solid #cbd5e1;
+}
+
+.flw-btn-cancel:hover:not(:disabled) {
+    background: #f8fafc;
+    color: #334155;
+    border-color: #94a3b8;
+}
+
+/* Footer Terms */
+.flw-momo-footer {
+    margin-top: 24px;
+    font-size: 0.7rem;
+    color: #94a3b8;
+    text-align: center;
+    line-height: 1.4;
+}
+
+/* Spinner */
+.flw-spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.flw-spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #ffffff;
+    animation: flw-spin 0.8s linear infinite;
+    display: inline-block;
+}
+
+@keyframes flw-spin {
+    to { transform: rotate(360deg); }
+}

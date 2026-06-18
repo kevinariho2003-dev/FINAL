@@ -5,13 +5,44 @@ import api from '../../services/api';
 import '../Dashboard.css';
 import './DonorDashboard.css';
 
-const JOURNEY_STEPS = [
-    { key: 'profile', label: 'Complete Donor Profile', desc: 'Fill in your medical, phenotypic, and demographic details', link: '/donor/profile' },
-    { key: 'consents', label: 'Grant Required Consents', desc: 'Authorize egg donation, data sharing, and matching', link: '/donor/consents' },
-    { key: 'screening', label: 'Medical Screening', desc: 'Upload screening documents or book a clinic appointment', link: '/donor/screening' },
-    { key: 'approval', label: 'Clinician Approval', desc: 'A clinician reviews your profile and screening results' },
-    { key: 'matching', label: 'Get Matched', desc: 'The matching engine pairs you with compatible recipients' },
-    { key: 'cycle', label: 'Donation Cycle', desc: 'Active egg donation procedure, medications, and compensation', link: '/donor/cycles' },
+const BASE = 'http://127.0.0.1:8000';
+
+function photoUrl(path) {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    return `${BASE}/storage/${path}`;
+}
+
+function SvgIcon({ name, className = '' }) {
+    const paths = {
+        clipboard: 'M9 3h6m-7 4h8m-8 4h8m-8 4h5 M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z',
+        check: 'M20 6 9 17l-5-5',
+        user: 'M20 21a8 8 0 0 0-16 0 M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10z',
+        shield: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
+        calendar: 'M8 2v4m8-4v4M3 10h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z',
+        card: 'M3 7h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7zm0 4h18',
+        flask: 'M10 2v6l-5 9a3 3 0 0 0 2.6 4.5h8.8A3 3 0 0 0 19 17l-5-9V2M8 2h8M8.5 15h7',
+        layers: 'm12 2 9 5-9 5-9-5 9-5zm-7 9 7 4 7-4M5 16l7 4 7-4',
+        camera: 'M4 8h4l2-3h4l2 3h4v11H4V8zm8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
+        clock: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zm0-14v5l3 2',
+        arrow: 'M5 12h14m-6-6 6 6-6 6',
+    };
+
+    return (
+        <svg className={`dd-svg ${className}`} viewBox="0 0 24 24" aria-hidden="true">
+            <path d={paths[name]} />
+        </svg>
+    );
+}
+
+const JOURNEY = [
+    { key: 'profile', label: 'Profile Completion', link: '/donor/profile', icon: 'user' },
+    { key: 'consents', label: 'Consents', link: '/donor/consents', icon: 'shield' },
+    { key: 'screening', label: 'Physical Appointment', link: '/donor/screening', icon: 'calendar' },
+    { key: 'payment', label: 'Initial Payment', icon: 'card' },
+    { key: 'cycle', label: 'Medication Phase', link: '/donor/cycles', icon: 'flask' },
+    { key: 'retrieval', label: 'Egg Retrieval', icon: 'layers' },
+    { key: 'final_payment', label: 'Final Payment', icon: 'card' },
 ];
 
 export default function DonorDashboard() {
@@ -19,255 +50,208 @@ export default function DonorDashboard() {
     const [profile, setProfile] = useState(null);
     const [consents, setConsents] = useState([]);
     const [matches, setMatches] = useState([]);
-    const [screeningDocs, setScreeningDocs] = useState([]);
-    const [appointments, setAppointments] = useState([]);
-    const [donationCycles, setDonationCycles] = useState([]);
+    const [docs, setDocs] = useState([]);
+    const [appts, setAppts] = useState([]);
+    const [cycles, setCycles] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchData = async () => {
+        (async () => {
             try {
-                const [profileRes, consentsRes, matchesRes, cyclesRes] = await Promise.allSettled([
+                const [pR, cR, mR, cyR] = await Promise.allSettled([
                     api.get('/donors'),
                     api.get('/consents'),
                     api.get('/matches'),
                     api.get('/donation-cycles'),
                 ]);
-                if (profileRes.status === 'fulfilled' && profileRes.value.data?.id) {
-                    setProfile(profileRes.value.data);
-                    // Fetch screening data
-                    const [docsRes, apptsRes] = await Promise.allSettled([
-                        api.get(`/donors/${profileRes.value.data.id}/screening-documents`),
-                        api.get(`/donors/${profileRes.value.data.id}/appointments`),
+                if (pR.status === 'fulfilled' && pR.value.data?.id) {
+                    const p = pR.value.data;
+                    setProfile(p);
+                    const [dR, aR] = await Promise.allSettled([
+                        api.get(`/donors/${p.id}/screening-documents`),
+                        api.get(`/donors/${p.id}/appointments`),
                     ]);
-                    if (docsRes.status === 'fulfilled') setScreeningDocs(docsRes.value.data || []);
-                    if (apptsRes.status === 'fulfilled') setAppointments(apptsRes.value.data || []);
+                    if (dR.status === 'fulfilled') setDocs(dR.value.data || []);
+                    if (aR.status === 'fulfilled') setAppts(aR.value.data || []);
                 }
-                if (consentsRes.status === 'fulfilled') {
-                    setConsents(consentsRes.value.data || []);
+                if (cR.status === 'fulfilled') setConsents(cR.value.data || []);
+                if (mR.status === 'fulfilled') {
+                    const d = mR.value.data;
+                    setMatches(d?.data || d || []);
                 }
-                if (matchesRes.status === 'fulfilled') {
-                    const md = matchesRes.value.data;
-                    setMatches(md?.data || md || []);
+                if (cyR.status === 'fulfilled') {
+                    const d = cyR.value.data;
+                    setCycles(d?.data || d || []);
                 }
-                if (cyclesRes.status === 'fulfilled') {
-                    const cd = cyclesRes.value.data;
-                    setDonationCycles(cd?.data || cd || []);
-                }
-            } catch { /* ignore */ }
-            finally { setLoading(false); }
-        };
-        fetchData();
+            } catch {
+                /* ignore dashboard widgets that fail independently */
+            } finally {
+                setLoading(false);
+            }
+        })();
     }, []);
 
-    if (loading) {
-        return (
-            <div className="page-loader">
-                <div className="spinner"></div>
-            </div>
-        );
-    }
+    if (loading) return <div className="page-loader"><div className="spinner" /></div>;
 
     const activeConsents = consents.filter(c => c.status === 'granted');
-    const hasProfile = !!profile;
+    const hasProfile = !!profile && !!profile.photo_path;
     const isApproved = profile?.status === 'approved';
-    const hasEggConsent = activeConsents.some(c => c.consent_type === 'egg_donation');
-    const hasScreening = screeningDocs.some(d => d.status === 'verified') || appointments.some(a => a.status === 'completed');
+    const hasConsent = activeConsents.some(c => c.consent_type === 'egg_donation');
+    const hasScreening = docs.some(d => d.status === 'verified') || appts.some(a => a.status === 'completed');
     const matchCount = Array.isArray(matches) ? matches.length : 0;
-    const hasCycle = Array.isArray(donationCycles) && donationCycles.length > 0;
+    const hasCycle = cycles.length > 0;
+    const activeCycle = cycles.find(c => c.outcome === 'pending');
+    const hasRetrieval = cycles.some(c => c.retrieval_date);
+    const hasInitialPayment = cycles.some(c => c.payments?.some(p => p.payment_stage === 'initial' && p.payment_status === 'completed'));
+    const hasFinalPayment = cycles.some(c => c.payments?.some(p => p.payment_stage === 'final' && p.payment_status === 'completed'));
 
-    // Calculate journey progress (6 steps now)
-    const stepsComplete = [hasProfile, hasEggConsent, hasScreening, isApproved, matchCount > 0, hasCycle].filter(Boolean).length;
-    const progressPct = Math.round((stepsComplete / 6) * 100);
+    const stepStatuses = [hasProfile, hasConsent, hasScreening, hasInitialPayment, hasCycle, hasRetrieval, hasFinalPayment];
+    const stepsComplete = stepStatuses.filter(Boolean).length;
+    const nextIncompleteStep = stepStatuses.indexOf(false);
+    const activeStep = nextIncompleteStep === -1 ? JOURNEY.length - 1 : nextIncompleteStep;
+    const currentStep = JOURNEY[activeStep];
 
-    // SVG progress ring math
-    const radius = 58;
-    const circumference = 2 * Math.PI * radius;
-    const dashOffset = circumference - (progressPct / 100) * circumference;
+    const nextAppt = [...appts]
+        .filter(a => a.status === 'requested' || a.status === 'confirmed')
+        .sort((a, b) => new Date(a.preferred_date) - new Date(b.preferred_date))[0];
 
-    // Determine which step is active (first incomplete)
-    const stepStatuses = [hasProfile, hasEggConsent, hasScreening, isApproved, matchCount > 0, hasCycle];
-    const activeStepIndex = stepStatuses.indexOf(false);
-
-    // BMI display
-    const bmi = profile?.bmi;
-    const bmiLabel = bmi
-        ? bmi >= 18.5 && bmi <= 24.9 ? 'Healthy' : bmi >= 25 && bmi <= 29.9 ? 'Overweight' : 'Outside range'
-        : '—';
+    const photo = photoUrl(profile?.photo_path);
+    const ini = ((user?.first_name?.[0] || '') + (user?.last_name?.[0] || '')).toUpperCase() || 'DN';
+    const donorCode = profile?.donor_code || 'DN-000000';
 
     return (
-        <div className="page">
-            {/* ── Hero Header ── */}
-            <div className="donor-dash-header fade-in">
-                <div className="greeting" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <img src="/assets/avatars/donor_default.png" alt="Donor" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', border: '3px solid rgba(236,72,153,0.3)', boxShadow: '0 4px 15px rgba(236,72,153,0.2)' }} />
-                    Welcome back, <span className="greeting-accent">{user?.first_name}</span>
-                </div>
-                <div className="subtitle">
-                    {isApproved
-                        ? 'Your profile is approved and ready for matching'
-                        : hasProfile
-                            ? 'Your profile is under review — hang tight!'
-                            : 'Let\'s get your donor profile set up'
-                    }
-                </div>
-                {hasProfile && (
-                    <div className="donor-code-chip">
-                        🧬 Donor Code: <strong>{profile.donor_code}</strong>
-                        <span className={`badge badge-${profile.status}`} style={{ marginLeft: '0.25rem' }}>{profile.status}</span>
-                    </div>
-                )}
-            </div>
-
-            {/* ── Stats Row ── */}
-            <div className="donor-stats-row">
-                <div className="donor-stat stat-profile fade-in fade-in-delay-1">
-                    <div className="stat-icon">📋</div>
-                    <div className="stat-number" style={{
-                        background: hasProfile ? 'linear-gradient(135deg, var(--success), #34d399)' : 'linear-gradient(135deg, var(--warning), #fbbf24)',
-                        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-                    }}>
-                        {hasProfile ? profile.status : 'N/A'}
-                    </div>
-                    <div className="stat-desc">Profile Status</div>
+        <div className="page dd-page">
+            <section className="dd-hero dd-panel">
+                <div className="dd-avatar-wrap">
+                    {photo ? (
+                        <img
+                            src={photo}
+                            alt={user?.first_name || 'Donor'}
+                            className="dd-avatar-img"
+                            onError={e => { e.currentTarget.style.display = 'none'; }}
+                        />
+                    ) : (
+                        <div className="dd-avatar-fallback">{ini}</div>
+                    )}
+                    {!photo && hasProfile && (
+                        <Link to="/donor/profile" className="dd-avatar-nudge" title="Upload profile photo">
+                            <SvgIcon name="camera" />
+                        </Link>
+                    )}
                 </div>
 
-                <div className="donor-stat stat-matches fade-in fade-in-delay-2">
-                    <div className="stat-icon">💕</div>
-                    <div className="stat-number" style={{
-                        background: 'linear-gradient(135deg, #ec4899, #f472b6)',
-                        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-                    }}>
-                        {matchCount}
+                <div className="dd-hero-info">
+                    <div className="dd-name-row">
+                        <h1 className="dd-name">Welcome back, {user?.first_name || 'Donor'}</h1>
+                        <span className="dd-role-pill">Donor</span>
                     </div>
-                    <div className="stat-desc">Active Matches</div>
+                    <p className="dd-stage-copy">
+                        Current stage: <strong>{currentStep.label}</strong>
+                    </p>
+                    {!photo && hasProfile && (
+                        <Link to="/donor/profile" className="dd-photo-link">
+                            <SvgIcon name="camera" />
+                            Add your profile photo
+                        </Link>
+                    )}
                 </div>
 
-                <div className="donor-stat stat-consents fade-in fade-in-delay-3">
-                    <div className="stat-icon">✅</div>
-                    <div className="stat-number" style={{
-                        background: 'linear-gradient(135deg, var(--success), #34d399)',
-                        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-                    }}>
-                        {activeConsents.length}/5
-                    </div>
-                    <div className="stat-desc">Consents Granted</div>
+                <div className="dd-code-chip">
+                    <SvgIcon name="clipboard" />
+                    {donorCode}
+                </div>
+            </section>
+
+            <section className="dd-panel dd-progress-panel">
+                <div className="dd-section-title">
+                    <SvgIcon name="clipboard" />
+                    <h2>Your Progress Tracker</h2>
                 </div>
 
-                <div className="donor-stat stat-bmi fade-in fade-in-delay-4">
-                    <div className="stat-icon">⚖️</div>
-                    <div className="stat-number" style={{
-                        background: 'linear-gradient(135deg, var(--info), #60a5fa)',
-                        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-                    }}>
-                        {bmi ? bmi : '—'}
-                    </div>
-                    <div className="stat-desc">BMI ({bmiLabel})</div>
+                <div className="dd-stage-track" aria-label="Donor progress tracker">
+                    {JOURNEY.map((step, i) => {
+                        const complete = stepStatuses[i];
+                        const active = i === activeStep;
+                        const content = (
+                            <>
+                                <span className="dd-stage-circle">
+                                    <span>{step.label}</span>
+                                    {complete && <span className="dd-stage-check"><SvgIcon name="check" /></span>}
+                                </span>
+                                {i < JOURNEY.length - 1 && <span className="dd-stage-line" />}
+                            </>
+                        );
+
+                        return step.link ? (
+                            <Link
+                                key={step.key}
+                                to={step.link}
+                                className={`dd-stage-step ${complete ? 'complete' : active ? 'active' : 'pending'}`}
+                            >
+                                {content}
+                            </Link>
+                        ) : (
+                            <div
+                                key={step.key}
+                                className={`dd-stage-step ${complete ? 'complete' : active ? 'active' : 'pending'}`}
+                            >
+                                {content}
+                            </div>
+                        );
+                    })}
                 </div>
-            </div>
+            </section>
 
-            {/* ── Main Content Grid ── */}
-            <div className="donor-content-grid">
-                {/* Left: Progress Ring + Quick Actions */}
-                <div className="card fade-in fade-in-delay-2">
-                    <div className="card-header">
-                        <h3 className="card-title">Your Progress</h3>
+            <section className="dd-panel dd-current-panel">
+                <div className="dd-section-title">
+                    <SvgIcon name={currentStep.icon} />
+                    <h2>Stage {Math.min(activeStep + 1, JOURNEY.length)}: {currentStep.label}</h2>
+                </div>
+                <div className="dd-current-body">
+                    <div className="dd-current-icon">
+                        <SvgIcon name={currentStep.icon} />
                     </div>
+                    <div>
+                        <h3>{isApproved ? 'Ready for matching' : hasProfile ? 'Waiting for clinician verification' : 'Start your donor profile'}</h3>
+                        <p>
+                            {isApproved
+                                ? 'Your donor details have been approved. The team can now continue with matching and next steps.'
+                                : hasProfile
+                                    ? 'Your details are saved. Keep your consents and appointments up to date while the clinical team reviews your profile.'
+                                    : 'Complete your profile first so the clinical team can review your information and guide you through the next stage.'
+                            }
+                        </p>
+                        <div className="dd-current-actions">
+                            {!hasProfile && <Link to="/donor/profile" className="dd-modern-btn">Complete profile <SvgIcon name="arrow" /></Link>}
+                            {hasProfile && !hasConsent && <Link to="/donor/consents" className="dd-modern-btn">Review consents <SvgIcon name="arrow" /></Link>}
+                            {hasProfile && hasConsent && !hasScreening && <Link to="/donor/screening" className="dd-modern-btn">Book screening <SvgIcon name="arrow" /></Link>}
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-                    <div className="progress-section">
-                        <div className="progress-ring-container">
-                            <svg width="140" height="140" viewBox="0 0 140 140">
-                                <defs>
-                                    <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" stopColor="#6366f1" />
-                                        <stop offset="50%" stopColor="#a78bfa" />
-                                        <stop offset="100%" stopColor="#ec4899" />
-                                    </linearGradient>
-                                </defs>
-                                <circle className="progress-ring-bg" cx="70" cy="70" r={radius} />
-                                <circle
-                                    className="progress-ring-fill"
-                                    cx="70" cy="70" r={radius}
-                                    strokeDasharray={circumference}
-                                    strokeDashoffset={dashOffset}
-                                />
-                            </svg>
-                            <div className="progress-ring-text">
-                                <div className="pct">{progressPct}%</div>
-                                <div className="pct-label">Complete</div>
+            {(nextAppt || activeCycle) && (
+                <section className="dd-mini-grid">
+                    {nextAppt && (
+                        <div className="dd-panel dd-mini-card">
+                            <SvgIcon name="calendar" />
+                            <div>
+                                <h3>Next appointment</h3>
+                                <p>{new Date(nextAppt.preferred_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                             </div>
                         </div>
-
-                        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textAlign: 'center', marginBottom: '1.5rem' }}>
-                            {stepsComplete}/6 steps completed
-                        </p>
-                    </div>
-
-                    <div className="quick-actions">
-                        {!hasProfile && (
-                            <Link to="/donor/profile" className="quick-action-btn primary">
-                                📝 Complete Profile
-                            </Link>
-                        )}
-                        {hasProfile && !hasEggConsent && (
-                            <Link to="/donor/consents" className="quick-action-btn primary">
-                                📋 Grant Consents
-                            </Link>
-                        )}
-                        {hasProfile && (
-                            <Link to="/donor/profile" className="quick-action-btn">
-                                ✏️ Edit Profile
-                            </Link>
-                        )}
-                        <Link to="/donor/screening" className="quick-action-btn">
-                            🔬 Screening & Appointments
-                        </Link>
-                        <Link to="/donor/consents" className="quick-action-btn">
-                            🔒 Manage Consents
-                        </Link>
-                    </div>
-                </div>
-
-                {/* Right: Journey Timeline */}
-                <div className="card fade-in fade-in-delay-3">
-                    <div className="card-header">
-                        <h3 className="card-title">Donor Journey</h3>
-                    </div>
-
-                    <div className="journey-steps">
-                        {JOURNEY_STEPS.map((step, i) => {
-                            const isComplete = stepStatuses[i];
-                            const isActive = i === activeStepIndex;
-                            const isPending = !isComplete && !isActive;
-
-                            return (
-                                <div className="journey-step" key={step.key}>
-                                    <div className="step-indicator">
-                                        <div className={`step-dot ${isComplete ? 'complete' : isActive ? 'active' : 'pending'}`}>
-                                            {isComplete ? '✓' : i + 1}
-                                        </div>
-                                        {i < JOURNEY_STEPS.length - 1 && (
-                                            <div className={`step-line ${isComplete ? 'complete' : 'pending'}`} />
-                                        )}
-                                    </div>
-                                    <div className="step-content">
-                                        <div className="step-title">
-                                            {step.link && !isComplete ? (
-                                                <Link to={step.link}>{step.label}</Link>
-                                            ) : (
-                                                <span style={{ color: isComplete ? 'var(--success)' : isPending ? 'var(--text-muted)' : 'var(--text-primary)' }}>
-                                                    {step.label}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div className="step-desc">{step.desc}</div>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            </div>
+                    )}
+                    {activeCycle && (
+                        <div className="dd-panel dd-mini-card">
+                            <SvgIcon name="flask" />
+                            <div>
+                                <h3>Active cycle</h3>
+                                <p>Started {new Date(activeCycle.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                            </div>
+                        </div>
+                    )}
+                </section>
+            )}
         </div>
     );
 }

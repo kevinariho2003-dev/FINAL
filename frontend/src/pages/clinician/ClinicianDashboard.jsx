@@ -304,55 +304,50 @@ export default function ClinicianDashboard() {
                     <span className="clin-section-sub">Current platform status</span>
                 </div>
                 <div className="clin-overview-grid">
-                    <div className="clin-overview-card">
-                        <h4>Donor Pipeline</h4>
-                        <div className="clin-pipeline">
-                            {[
-                                { label: 'Approved', count: stats?.activeDonors || 0, color: '#10b981' },
-                                { label: 'Pending', count: stats?.pendingDonors || 0, color: '#f59e0b' },
-                            ].map((p, i) => (
-                                <div key={i} className="clin-pipeline-item">
-                                    <div className="clin-pipeline-dot" style={{ background: p.color }} />
-                                    <span className="clin-pipeline-label">{p.label}</span>
-                                    <span className="clin-pipeline-count" style={{ color: p.color }}>{p.count}</span>
-                                </div>
-                            ))}
+                    <div className="clin-overview-card premium-overview-card">
+                        <div className="premium-overview-header">
+                            <h4>Donor Pipeline</h4>
+                            <div className="premium-overview-icon" style={{color: '#10b981', background: 'rgba(16,185,129,0.1)'}}>
+                                {Icons.users}
+                            </div>
                         </div>
-                        <svg className="clin-mini-chart" viewBox="0 0 200 50" preserveAspectRatio="none">
-                            <defs>
-                                <linearGradient id="clinGrad" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.2" />
-                                    <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
-                                </linearGradient>
-                            </defs>
-                            <path d="M0,40 Q25,35 50,30 T100,25 T150,20 T200,15 L200,50 L0,50 Z" fill="url(#clinGrad)" />
-                            <path d="M0,40 Q25,35 50,30 T100,25 T150,20 T200,15" fill="none" stroke="#10b981" strokeWidth="2" />
-                        </svg>
+                        <div className="premium-overview-stats">
+                            <div className="premium-stat-box">
+                                <span className="premium-stat-value" style={{color: '#10b981'}}>{stats?.activeDonors || 0}</span>
+                                <span className="premium-stat-label">Approved</span>
+                            </div>
+                            <div className="premium-stat-box">
+                                <span className="premium-stat-value" style={{color: '#f59e0b'}}>{stats?.pendingDonors || 0}</span>
+                                <span className="premium-stat-label">Pending</span>
+                            </div>
+                        </div>
+                        <div className="premium-stacked-bar">
+                            <div className="premium-stacked-segment" style={{width: `${((stats?.activeDonors || 0) / Math.max(1, (stats?.activeDonors || 0) + (stats?.pendingDonors || 0))) * 100}%`, background: '#10b981', boxShadow: '0 0 10px rgba(16,185,129,0.4)'}} />
+                            <div className="premium-stacked-segment" style={{width: `${((stats?.pendingDonors || 0) / Math.max(1, (stats?.activeDonors || 0) + (stats?.pendingDonors || 0))) * 100}%`, background: '#f59e0b'}} />
+                        </div>
                     </div>
-                    <div className="clin-overview-card">
-                        <h4>Match Activity</h4>
-                        <div className="clin-pipeline">
-                            {[
-                                { label: 'To Review', count: stats?.matchesForReview || 0, color: '#8b5cf6' },
-                                { label: 'Recipients', count: stats?.activeRecipients || 0, color: '#06b6d4' },
-                            ].map((p, i) => (
-                                <div key={i} className="clin-pipeline-item">
-                                    <div className="clin-pipeline-dot" style={{ background: p.color }} />
-                                    <span className="clin-pipeline-label">{p.label}</span>
-                                    <span className="clin-pipeline-count" style={{ color: p.color }}>{p.count}</span>
-                                </div>
-                            ))}
+                    
+                    <div className="clin-overview-card premium-overview-card">
+                        <div className="premium-overview-header">
+                            <h4>Match Activity</h4>
+                            <div className="premium-overview-icon" style={{color: '#8b5cf6', background: 'rgba(139,92,246,0.1)'}}>
+                                {Icons.link}
+                            </div>
                         </div>
-                        <svg className="clin-mini-chart" viewBox="0 0 200 50" preserveAspectRatio="none">
-                            <defs>
-                                <linearGradient id="clinGrad2" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.2" />
-                                    <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0" />
-                                </linearGradient>
-                            </defs>
-                            <path d="M0,35 Q30,30 60,32 T120,22 T180,18 L200,15 L200,50 L0,50 Z" fill="url(#clinGrad2)" />
-                            <path d="M0,35 Q30,30 60,32 T120,22 T180,18 L200,15" fill="none" stroke="#8b5cf6" strokeWidth="2" />
-                        </svg>
+                        <div className="premium-overview-stats">
+                            <div className="premium-stat-box">
+                                <span className="premium-stat-value" style={{color: '#8b5cf6'}}>{stats?.matchesForReview || 0}</span>
+                                <span className="premium-stat-label">To Review</span>
+                            </div>
+                            <div className="premium-stat-box">
+                                <span className="premium-stat-value" style={{color: '#06b6d4'}}>{stats?.activeRecipients || 0}</span>
+                                <span className="premium-stat-label">Recipients</span>
+                            </div>
+                        </div>
+                        <div className="premium-stacked-bar">
+                            <div className="premium-stacked-segment" style={{width: `${((stats?.matchesForReview || 0) / Math.max(1, (stats?.matchesForReview || 0) + (stats?.activeRecipients || 0))) * 100}%`, background: '#8b5cf6', boxShadow: '0 0 10px rgba(139,92,246,0.4)'}} />
+                            <div className="premium-stacked-segment" style={{width: `${((stats?.activeRecipients || 0) / Math.max(1, (stats?.matchesForReview || 0) + (stats?.activeRecipients || 0))) * 100}%`, background: '#06b6d4', boxShadow: '0 0 10px rgba(6,182,212,0.4)'}} />
+                        </div>
                     </div>
                 </div>
             </div>
