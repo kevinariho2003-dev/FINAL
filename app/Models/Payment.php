@@ -13,7 +13,10 @@ class Payment extends Model
         'payment_date',
         'payment_status',
         'payment_method',
+        'payment_stage',
         'reference_number',
+        'flw_transaction_id',
+        'notes',
     ];
 
     protected function casts(): array

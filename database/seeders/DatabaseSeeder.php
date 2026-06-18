@@ -12,42 +12,46 @@ class DatabaseSeeder extends Seeder
     {
         // ── Admin user ──
         User::create([
-            'first_name' => 'Admin',
-            'last_name' => 'EDRMS',
-            'email' => 'admin@edrms.ug',
-            'role' => 'admin',
-            'password' => 'password123',
-            'is_active' => true,
+            'first_name'        => 'Admin',
+            'last_name'         => 'EDRMS',
+            'email'             => 'admin@edrms.ug',
+            'role'              => 'admin',
+            'password'          => 'password123',
+            'is_active'         => true,
+            'email_verified_at' => now(),
         ]);
 
         // ── Clinician user ──
         User::create([
-            'first_name' => 'Dr. Sarah',
-            'last_name' => 'Nakamya',
-            'email' => 'clinician@edrms.ug',
-            'role' => 'clinician',
-            'password' => 'password123',
-            'is_active' => true,
+            'first_name'        => 'Dr. Sarah',
+            'last_name'         => 'Nakamya',
+            'email'             => 'clinician@edrms.ug',
+            'role'              => 'clinician',
+            'password'          => 'password123',
+            'is_active'         => true,
+            'email_verified_at' => now(),
         ]);
 
         // ── Sample donor user ──
         User::create([
-            'first_name' => 'Grace',
-            'last_name' => 'Auma',
-            'email' => 'donor@edrms.ug',
-            'role' => 'donor',
-            'password' => 'password123',
-            'is_active' => true,
+            'first_name'        => 'Grace',
+            'last_name'         => 'Auma',
+            'email'             => 'donor@edrms.ug',
+            'role'              => 'donor',
+            'password'          => 'password123',
+            'is_active'         => true,
+            'email_verified_at' => now(),
         ]);
 
         // ── Sample recipient user ──
         User::create([
-            'first_name' => 'Janet',
-            'last_name' => 'Mukasa',
-            'email' => 'recipient@edrms.ug',
-            'role' => 'recipient',
-            'password' => 'password123',
-            'is_active' => true,
+            'first_name'        => 'Janet',
+            'last_name'         => 'Mukasa',
+            'email'             => 'recipient@edrms.ug',
+            'role'              => 'recipient',
+            'password'          => 'password123',
+            'is_active'         => true,
+            'email_verified_at' => now(),
         ]);
 
         // ── Default matching criteria weights ──

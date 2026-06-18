@@ -11,7 +11,7 @@ class MatchResult extends Model
     protected $fillable = [
         'recipient_id', 'donor_id',
         'match_score', 'score_breakdown',
-        'hard_filter_passed', 'status', 'matched_by',
+        'hard_filter_passed', 'status', 'recipient_status', 'matched_by',
         'reviewed_by', 'review_notes', 'reviewed_at',
     ];
 

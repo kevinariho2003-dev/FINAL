@@ -15,6 +15,7 @@ class User extends Authenticatable
         'first_name',
         'last_name',
         'email',
+        'email_verified_at',
         'avatar',
         'phone',
         'date_of_birth',
@@ -68,6 +69,11 @@ class User extends Authenticatable
     public function recipientProfile()
     {
         return $this->hasOne(RecipientProfile::class);
+    }
+
+    public function questionnaireResponses()
+    {
+        return $this->hasMany(DonorQuestionnaireResponse::class);
     }
 
     public function consents()

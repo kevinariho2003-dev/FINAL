@@ -41,9 +41,16 @@ class DonationCycle extends Model
         return $this->hasMany(Medication::class, 'cycle_id');
     }
 
+    /** Single payment (legacy — kept for compat) */
     public function payment()
     {
         return $this->hasOne(Payment::class, 'cycle_id');
+    }
+
+    /** All compensation payments for this cycle (initial + final) */
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'cycle_id')->orderBy('payment_stage');
     }
 
     // ── Helpers ──
