@@ -61,8 +61,7 @@
   --radius-full: 9999px;
 
   /* Layout */
-  --sidebar-width: 264px;
-  --sidebar-collapsed: 76px;
+  --navbar-height: 64px;
 
   /* Transitions */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -150,16 +149,19 @@ a:hover { color: var(--accent-hover); }
 
 .app-layout {
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
 }
 
 .app-content {
   flex: 1;
-  margin-left: var(--sidebar-width);
+  margin-left: 0;
+  padding-top: var(--navbar-height);
+  padding-bottom: 118px;
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
-  transition: margin-left 0.4s var(--ease-out);
+  transition: background 0.4s var(--ease-out);
   background:
     radial-gradient(ellipse at 0% 0%, var(--accent-subtle) 0%, transparent 50%),
     radial-gradient(ellipse at 100% 10%, rgba(139, 92, 246, 0.04) 0%, transparent 40%),
@@ -171,7 +173,7 @@ a:hover { color: var(--accent-hover); }
 .app-content::before {
   content: '';
   position: fixed;
-  top: 0; left: var(--sidebar-width); right: 0; bottom: 0;
+  top: var(--navbar-height); left: 0; right: 0; bottom: 0;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");
   pointer-events: none;
   z-index: 0;
@@ -181,7 +183,7 @@ a:hover { color: var(--accent-hover); }
 .app-content::after {
   content: '';
   position: fixed;
-  top: 0; left: var(--sidebar-width); right: 0; bottom: 0;
+  top: var(--navbar-height); left: 0; right: 0; bottom: 0;
   background:
     radial-gradient(circle at 20% 20%, rgba(14, 165, 233, 0.05) 0%, transparent 50%),
     radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.03) 0%, transparent 50%);
@@ -204,7 +206,7 @@ a:hover { color: var(--accent-hover); }
 /* ── Floating Background ── */
 .floating-bg {
   position: fixed;
-  top: 0; left: var(--sidebar-width); right: 0; bottom: 0;
+  top: var(--navbar-height); left: 0; right: 0; bottom: 0;
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
@@ -234,9 +236,10 @@ a:hover { color: var(--accent-hover); }
 }
 
 @media (max-width: 768px) {
-  .app-content { margin-left: 0; padding-top: 60px; }
-  .app-content::before { left: 0; }
-  .floating-bg { left: 0; }
+  .app-content {
+    padding-top: var(--navbar-height);
+    padding-bottom: 178px;
+  }
 }
 
 /* ══════════════════════════════════════════════

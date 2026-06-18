@@ -16,8 +16,38 @@ export function AuthProvider({ children }) {
         setLoading(false);
     }, []);
 
+    // 10-minute Idle Auto-Logout
+    useEffect(() => {
+        let timeoutId;
+        const resetTimer = () => {
+            clearTimeout(timeoutId);
+            if (user) {
+                // 10 minutes = 10 * 60 * 1000 ms
+                timeoutId = setTimeout(() => {
+                    logout();
+                    window.location.href = '/login?reason=timeout';
+                }, 600000);
+            }
+        };
+
+        // Attach listeners for user activity
+        const events = ['mousemove', 'keydown', 'scroll', 'click'];
+        events.forEach(event => window.addEventListener(event, resetTimer));
+        
+        // Start initial timer
+        resetTimer();
+
+        return () => {
+            clearTimeout(timeoutId);
+            events.forEach(event => window.removeEventListener(event, resetTimer));
+        };
+    }, [user]);
+
     const login = async (email, password) => {
         const response = await api.post('/login', { email, password });
+        if (response.data.requires_otp) {
+            return response.data;
+        }
         const { user: userData, token } = response.data;
         localStorage.setItem('auth_token', token);
         localStorage.setItem('user', JSON.stringify(userData));
@@ -25,13 +55,12 @@ export function AuthProvider({ children }) {
         return userData;
     };
 
-    const register = async (data) => {
-        const response = await api.post('/register', data);
-        const { user: userData, token } = response.data;
-        localStorage.setItem('auth_token', token);
-        localStorage.setItem('user', JSON.stringify(userData));
+    /**
+     * Called by Register.jsx after OTP verification succeeds.
+     * The token + user are already in localStorage; we just sync context.
+     */
+    const setUserFromToken = (userData) => {
         setUser(userData);
-        return userData;
     };
 
     const logout = async () => {
@@ -45,7 +74,7 @@ export function AuthProvider({ children }) {
         setUser(null);
     };
 
-    const value = { user, setUser, loading, login, register, logout };
+    const value = { user, setUser, loading, login, setUserFromToken, logout };
 
     return (
         <AuthContext.Provider value={value}>
@@ -61,3 +90,4 @@ export function useAuth() {
     }
     return context;
 }
+

@@ -1,85 +1,412 @@
-.navbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 2rem;
-  height: 64px;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+/* ══════════════════════════════════════════════
+   TOP NAVBAR — Clinical Glass Navigation v3.0
+   Premium Glassmorphism · Horizontal Layout
+   ══════════════════════════════════════════════ */
+
+.top-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--navbar-height, 64px);
+    background: var(--bg-sidebar);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    z-index: 200;
+    transition: background 0.4s var(--ease-out), border-color 0.4s var(--ease-out);
+    box-shadow: 0 1px 20px rgba(0, 0, 0, 0.06);
 }
 
-.navbar-brand a {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  text-decoration: none;
-  color: #fff;
-  font-weight: 700;
-  font-size: 1.25rem;
+[data-theme="dark"] .top-navbar {
+    box-shadow: 0 1px 30px rgba(0, 0, 0, 0.3);
 }
 
-.brand-icon {
-  font-size: 1.5rem;
+/* ── Brand ── */
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    flex-shrink: 0;
+    min-width: 148px;
 }
 
+.navbar-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0.22rem;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ffffff 0%, #ecfeff 100%);
+    border: 1px solid rgba(14, 165, 233, 0.32);
+    box-shadow: 0 8px 22px rgba(14, 165, 233, 0.18);
+    transition: transform 0.3s var(--ease-spring);
+    overflow: hidden;
+}
+
+.navbar-logo img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+    border-radius: 9px;
+}
+
+[data-theme="dark"] .navbar-logo {
+    background: linear-gradient(135deg, #f8fafc 0%, #cffafe 100%);
+    border-color: rgba(34, 211, 238, 0.55);
+}
+
+.navbar-logo:hover {
+    transform: translateY(-1px);
+}
+
+.navbar-brand-text {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+}
+
+/* ── Desktop Navigation Links ── */
 .navbar-links {
-  display: flex;
-  gap: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin: 0 auto;
+    padding: 0 1rem;
 }
 
-.nav-link {
-  padding: 0.5rem 1rem;
-  color: rgba(255,255,255,0.7);
-  text-decoration: none;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: all 0.2s;
+.navbar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.85rem;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.84rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: all 0.25s var(--ease-out);
+    position: relative;
 }
 
-.nav-link:hover {
-  color: #fff;
-  background: rgba(255,255,255,0.1);
+.navbar-link:hover {
+    background: var(--accent-subtle);
+    color: var(--accent);
 }
 
-.navbar-user {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+.navbar-link--active {
+    background: var(--accent-subtle);
+    color: var(--accent);
+    font-weight: 600;
 }
 
-.user-badge {
-  padding: 0.25rem 0.75rem;
-  background: rgba(99, 102, 241, 0.2);
-  color: #a5b4fc;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+/* Active underline glow */
+.navbar-link--active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent), #0284c7);
+    box-shadow: 0 0 8px var(--accent-glow);
 }
 
-.user-name {
-  color: rgba(255,255,255,0.8);
-  font-size: 0.9rem;
+.navbar-link-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transition: transform 0.2s, opacity 0.2s;
 }
 
-.btn-logout {
-  padding: 0.4rem 1rem;
-  background: rgba(239, 68, 68, 0.15);
-  color: #fca5a5;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  font-weight: 500;
-  transition: all 0.2s;
+.navbar-link:hover .navbar-link-icon,
+.navbar-link--active .navbar-link-icon {
+    opacity: 1;
+    transform: scale(1.1);
 }
 
-.btn-logout:hover {
-  background: rgba(239, 68, 68, 0.3);
-  color: #fff;
+.navbar-link-label {
+    line-height: 1;
+}
+
+/* ── Right Section ── */
+.navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-shrink: 0;
+}
+
+/* Theme Toggle */
+.navbar-theme-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--bg-input);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.25s var(--ease-out);
+}
+
+.navbar-theme-btn:hover {
+    background: var(--accent-subtle);
+    border-color: var(--accent);
+    transform: scale(1.08);
+}
+
+/* User Info */
+.navbar-user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: var(--radius-sm);
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    transition: all 0.25s var(--ease-out);
+}
+
+.navbar-user-info:hover {
+    border-color: var(--border-hover);
+}
+
+.navbar-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.65rem;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.navbar-user-meta {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.navbar-user-name {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.navbar-user-role {
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Logout Button */
+.navbar-logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: var(--radius-sm);
+    background: var(--danger-bg);
+    color: #ef4444;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s var(--ease-out);
+}
+
+.navbar-logout-btn:hover {
+    background: rgba(239, 68, 68, 0.18);
+    color: #dc2626;
+    border-color: rgba(239, 68, 68, 0.35);
+    transform: translateY(-1px);
+}
+
+/* ── Mobile Toggle ── */
+.navbar-mobile-toggle {
+    display: none;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--text-primary);
+    padding: 0.25rem;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ── Mobile Overlay ── */
+.navbar-mobile-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--bg-modal-overlay);
+    backdrop-filter: blur(4px);
+    z-index: 198;
+}
+
+/* ── Mobile Dropdown Menu ── */
+.navbar-mobile-menu {
+    display: none;
+    position: fixed;
+    top: var(--navbar-height, 64px);
+    left: 0;
+    right: 0;
+    background: var(--bg-sidebar);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border-bottom: 1px solid var(--border);
+    padding: 0.5rem 1rem 1rem;
+    z-index: 199;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: all 0.35s var(--ease-out);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.navbar-mobile-menu--open {
+    max-height: 500px;
+    opacity: 1;
+    padding-top: 0.75rem;
+}
+
+.navbar-mobile-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.7rem 1rem;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s var(--ease-out);
+}
+
+.navbar-mobile-link:hover {
+    background: var(--accent-subtle);
+    color: var(--accent);
+}
+
+.navbar-mobile-link--active {
+    background: var(--accent-subtle);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.navbar-mobile-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0.5rem 0;
+}
+
+.navbar-mobile-theme,
+.navbar-mobile-logout {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.7rem 1rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--text-secondary);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s var(--ease-out);
+}
+
+.navbar-mobile-theme:hover {
+    background: var(--accent-subtle);
+    color: var(--accent);
+}
+
+.navbar-mobile-logout {
+    color: #ef4444;
+}
+
+.navbar-mobile-logout:hover {
+    background: var(--danger-bg);
+}
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE — Mobile Breakpoints
+   ══════════════════════════════════════════════ */
+
+@media (max-width: 1024px) {
+    .navbar-link-label {
+        display: none;
+    }
+    .navbar-link {
+        padding: 0.5rem 0.6rem;
+    }
+    .navbar-brand {
+        min-width: auto;
+    }
+    .navbar-user-meta {
+        display: none;
+    }
+    .navbar-logout-text {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .navbar-links {
+        display: none;
+    }
+
+    .navbar-user-info {
+        display: none;
+    }
+
+    .navbar-logout-btn {
+        display: none;
+    }
+
+    .navbar-mobile-toggle {
+        display: flex;
+    }
+
+    .navbar-brand-text {
+        display: none;
+    }
+
+    .navbar-logo {
+        width: 42px;
+        height: 42px;
+    }
+
+    .navbar-mobile-menu {
+        display: block;
+    }
+
+    .navbar-mobile-overlay {
+        display: block;
+    }
 }

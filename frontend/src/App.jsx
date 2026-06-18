@@ -1,40 +1,43 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
-import Sidebar from './components/Sidebar';
+import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import { Suspense, lazy } from 'react';
 
 // Auth pages
-import Landing from './pages/auth/Landing';
-import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
+const Landing = lazy(() => import('./pages/auth/Landing'));
+const Login = lazy(() => import('./pages/auth/Login'));
+const Register = lazy(() => import('./pages/auth/Register'));
 
 // Dashboards
-import DonorDashboard from './pages/donor/DonorDashboard';
-import RecipientDashboard from './pages/recipient/RecipientDashboard';
-import ClinicianDashboard from './pages/clinician/ClinicianDashboard';
-import AdminDashboard from './pages/admin/AdminDashboard';
+const DonorDashboard = lazy(() => import('./pages/donor/DonorDashboard'));
+const RecipientDashboard = lazy(() => import('./pages/recipient/RecipientDashboard'));
+const ClinicianDashboard = lazy(() => import('./pages/clinician/ClinicianDashboard'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 
 // Donor pages
-import DonorProfileForm from './pages/donor/DonorProfileForm';
-import DonorConsentForm from './pages/donor/DonorConsentForm';
-import DonorScreening from './pages/donor/DonorScreening';
-import DonorCycles from './pages/donor/DonorCycles';
+const DonorProfileForm = lazy(() => import('./pages/donor/DonorProfileForm'));
+const DonorConsentForm = lazy(() => import('./pages/donor/DonorConsentForm'));
+const DonorScreening = lazy(() => import('./pages/donor/DonorScreening'));
+const DonorCycles = lazy(() => import('./pages/donor/DonorCycles'));
 
 // Recipient pages
-import RecipientProfileForm from './pages/recipient/RecipientProfileForm';
-import RecipientMatchList from './pages/recipient/RecipientMatchList';
+const RecipientProfileForm = lazy(() => import('./pages/recipient/RecipientProfileForm'));
+const RecipientConsentForm = lazy(() => import('./pages/recipient/RecipientConsentForm'));
+const RecipientMatchList = lazy(() => import('./pages/recipient/RecipientMatchList'));
 
 // Clinician pages
-import ClinicianDonorList from './pages/clinician/ClinicianDonorList';
-import ClinicianRecipientList from './pages/clinician/ClinicianRecipientList';
-import ClinicianMatchReview from './pages/clinician/ClinicianMatchReview';
-import ClinicianCycles from './pages/clinician/ClinicianCycles';
+const ClinicianDonorList = lazy(() => import('./pages/clinician/ClinicianDonorList'));
+const ClinicianRecipientList = lazy(() => import('./pages/clinician/ClinicianRecipientList'));
+const ClinicianMatchReview = lazy(() => import('./pages/clinician/ClinicianMatchReview'));
+const ClinicianCycles = lazy(() => import('./pages/clinician/ClinicianCycles'));
 
 // Admin pages
-import AdminUserManagement from './pages/admin/AdminUserManagement';
-import AdminMatchingConfig from './pages/admin/AdminMatchingConfig';
-import AdminAuditLogs from './pages/admin/AdminAuditLogs';
+const AdminUserManagement = lazy(() => import('./pages/admin/AdminUserManagement'));
+const AdminMatchingConfig = lazy(() => import('./pages/admin/AdminMatchingConfig'));
+const AdminAuditLogs = lazy(() => import('./pages/admin/AdminAuditLogs'));
+const MomoValidation = lazy(() => import('./pages/payment/MomoValidation'));
 
 /* ── Floating Background SVGs ── */
 function FloatingBackground() {
@@ -61,28 +64,46 @@ function FloatingBackground() {
 
 function AppRoutes() {
   const { user } = useAuth();
+  const location = useLocation();
 
-  /* Public pages — no sidebar, no footer override */
-  if (!user) {
+  const SuspenseWrapper = ({ children }) => (
+    <Suspense fallback={<div className="page-loader"><div className="spinner"></div></div>}>
+      {children}
+    </Suspense>
+  );
+
+  if (location.pathname === '/momo-validation') {
     return (
       <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/momo-validation" element={<SuspenseWrapper><MomoValidation /></SuspenseWrapper>} />
       </Routes>
     );
   }
 
-  /* Authenticated — sidebar + content area */
+  /* Public pages — no navbar, no footer override */
+  if (!user) {
+    return (
+      <SuspenseWrapper>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </SuspenseWrapper>
+    );
+  }
+
+  /* Authenticated — top navbar + content area */
   return (
     <div className="app-layout">
-      <Sidebar />
+      <Navbar />
       <div className="app-content">
         <FloatingBackground />
         <div className="app-content-inner">
-          <Routes>
-            <Route path="/" element={<Navigate to={`/${user.role}/dashboard`} />} />
+          <SuspenseWrapper>
+            <Routes>
+              <Route path="/" element={<Navigate to={`/${user.role}/dashboard`} />} />
             <Route path="/login" element={<Navigate to={`/${user.role}/dashboard`} />} />
             <Route path="/register" element={<Navigate to={`/${user.role}/dashboard`} />} />
 
@@ -96,27 +117,28 @@ function AppRoutes() {
             {/* Recipient */}
             <Route path="/recipient/dashboard" element={<ProtectedRoute roles={['recipient']}><RecipientDashboard /></ProtectedRoute>} />
             <Route path="/recipient/profile" element={<ProtectedRoute roles={['recipient']}><RecipientProfileForm /></ProtectedRoute>} />
+            <Route path="/recipient/consents" element={<ProtectedRoute roles={['recipient']}><RecipientConsentForm /></ProtectedRoute>} />
             <Route path="/recipient/matches" element={<ProtectedRoute roles={['recipient']}><RecipientMatchList /></ProtectedRoute>} />
 
-            {/* Clinician */}
+            {/* Clinician — medical data access (clinician ONLY, no admin) */}
             <Route path="/clinician/dashboard" element={<ProtectedRoute roles={['clinician']}><ClinicianDashboard /></ProtectedRoute>} />
-            <Route path="/clinician/donors" element={<ProtectedRoute roles={['clinician', 'admin']}><ClinicianDonorList /></ProtectedRoute>} />
-            <Route path="/clinician/recipients" element={<ProtectedRoute roles={['clinician', 'admin']}><ClinicianRecipientList /></ProtectedRoute>} />
-            <Route path="/clinician/matches" element={<ProtectedRoute roles={['clinician', 'admin']}><ClinicianMatchReview /></ProtectedRoute>} />
-            <Route path="/clinician/cycles" element={<ProtectedRoute roles={['clinician', 'admin']}><ClinicianCycles /></ProtectedRoute>} />
+            <Route path="/clinician/donors" element={<ProtectedRoute roles={['clinician']}><ClinicianDonorList /></ProtectedRoute>} />
+            <Route path="/clinician/recipients" element={<ProtectedRoute roles={['clinician']}><ClinicianRecipientList /></ProtectedRoute>} />
+            <Route path="/clinician/matches" element={<ProtectedRoute roles={['clinician']}><ClinicianMatchReview /></ProtectedRoute>} />
+            <Route path="/clinician/cycles" element={<ProtectedRoute roles={['clinician']}><ClinicianCycles /></ProtectedRoute>} />
 
-            {/* Admin */}
+            {/* Admin — system & user management only */}
             <Route path="/admin/dashboard" element={<ProtectedRoute roles={['admin']}><AdminDashboard /></ProtectedRoute>} />
             <Route path="/admin/users" element={<ProtectedRoute roles={['admin']}><AdminUserManagement /></ProtectedRoute>} />
             <Route path="/admin/matching-config" element={<ProtectedRoute roles={['admin']}><AdminMatchingConfig /></ProtectedRoute>} />
             <Route path="/admin/audit-logs" element={<ProtectedRoute roles={['admin']}><AdminAuditLogs /></ProtectedRoute>} />
-            <Route path="/admin/cycles" element={<ProtectedRoute roles={['admin']}><ClinicianCycles /></ProtectedRoute>} />
 
-            <Route path="*" element={<Navigate to={`/${user.role}/dashboard`} replace />} />
-          </Routes>
+              <Route path="*" element={<Navigate to={`/${user.role}/dashboard`} replace />} />
+            </Routes>
+          </SuspenseWrapper>
         </div>
-        <Footer />
       </div>
+      <Footer />
     </div>
   );
 }
