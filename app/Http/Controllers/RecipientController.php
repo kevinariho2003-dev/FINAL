@@ -80,7 +80,7 @@ class RecipientController extends Controller
             ...$validated,
             'user_id' => $user->id,
             'recipient_code' => RecipientProfile::generateCode(),
-            'status' => 'active',
+            'status' => 'pending',
         ]);
 
         AuditLog::create([
@@ -124,6 +124,24 @@ class RecipientController extends Controller
 
         if ($user->role === 'recipient' && $profile->user_id !== $user->id) {
             return response()->json(['message' => 'Access denied.'], 403);
+        }
+
+        // Recipients can only update preferences and dynamic attributes after initial creation
+        if ($user->role === 'recipient') {
+            $request->replace($request->only([
+                'treatment_history',
+                'preferred_blood_type',
+                'preferred_genotype',
+                'preferred_ethnicity',
+                'preferred_skin_tone',
+                'preferred_hair_color',
+                'preferred_eye_color',
+                'preferred_age_min',
+                'preferred_age_max',
+                'preferred_education_level',
+                'max_previous_donations',
+                'is_international'
+            ]));
         }
 
         $validated = $request->validate([
@@ -176,7 +194,7 @@ class RecipientController extends Controller
         }
 
         $validated = $request->validate([
-            'status' => 'required|in:pending,approved,suspended',
+            'status' => 'required|in:pending,active,approved,suspended',
         ]);
 
         $profile = RecipientProfile::findOrFail($id);

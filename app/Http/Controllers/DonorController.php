@@ -142,8 +142,17 @@ class DonorController extends Controller
         $profile = DonorProfile::findOrFail($id);
 
         // Only the owning donor or clinician/admin can update
-        if ($user->role === 'donor' && $profile->user_id !== $user->id) {
-            return response()->json(['message' => 'Access denied.'], 403);
+        if ($user->role === 'donor') {
+            if ($profile->user_id !== $user->id) {
+                return response()->json(['message' => 'Access denied.'], 403);
+            }
+            // Donors can ONLY update dynamic attributes after initial creation
+            $request->replace($request->only([
+                'weight_kg', 
+                'education_level', 
+                'occupation', 
+                'availability_status'
+            ]));
         }
 
         $validated = $request->validate([
@@ -212,6 +221,13 @@ class DonorController extends Controller
 
         $profile = DonorProfile::findOrFail($id);
         $old = $profile->toArray();
+
+        // ── Mandatory photo check before approval ──
+        if ($validated['status'] === 'approved' && empty($profile->photo_path)) {
+            return response()->json([
+                'message' => 'Cannot approve donor: a profile photo must be uploaded first. The recipient needs to verify the donor\'s physicality.',
+            ], 422);
+        }
 
         $profile->update($validated);
 

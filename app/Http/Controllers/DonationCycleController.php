@@ -19,7 +19,7 @@ class DonationCycleController extends Controller
     {
         $user = $request->user();
 
-        $query = DonationCycle::with(['donor.user', 'recipient.user', 'medications', 'payment']);
+        $query = DonationCycle::with(['donor.user', 'recipient.user', 'medications', 'payments']);
 
         if ($user->role === 'donor') {
             $donorProfile = DonorProfile::where('user_id', $user->id)->first();
@@ -43,6 +43,9 @@ class DonationCycleController extends Controller
         }
 
         $cycles = $query->orderBy('created_at', 'desc')->paginate(15);
+        $cycles->getCollection()->transform(function ($c) use ($user) {
+            return $this->maskCycle($c, $user);
+        });
         return response()->json($cycles);
     }
 
@@ -53,8 +56,8 @@ class DonationCycleController extends Controller
     {
         $user = $request->user();
 
-        if (!in_array($user->role, ['admin', 'clinician'])) {
-            return response()->json(['message' => 'Only clinicians/admins can create donation cycles.'], 403);
+        if ($user->role !== 'clinician') {
+            return response()->json(['message' => 'Only clinicians can create donation cycles.'], 403);
         }
 
         $validated = $request->validate([
@@ -62,10 +65,13 @@ class DonationCycleController extends Controller
             'start_date' => 'required|date|after_or_equal:today',
         ]);
 
-        // Verify the match is approved
+        // Verify the match is approved by clinician and accepted by recipient
         $match = MatchResult::findOrFail($validated['match_id']);
         if ($match->status !== 'approved') {
             return response()->json(['message' => 'Only approved matches can start a donation cycle.'], 422);
+        }
+        if ($match->recipient_status !== 'accepted') {
+            return response()->json(['message' => 'The recipient has not accepted this match yet.'], 422);
         }
 
         // Check no active cycle exists for this donor-recipient pair
@@ -103,9 +109,12 @@ class DonationCycleController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
+        $loadedCycle = $cycle->load(['donor.user', 'recipient.user']);
+        $this->maskCycle($loadedCycle, $user);
+
         return response()->json([
             'message' => 'Donation cycle created successfully',
-            'cycle' => $cycle->load(['donor.user', 'recipient.user']),
+            'cycle' => $loadedCycle,
         ], 201);
     }
 
@@ -114,8 +123,9 @@ class DonationCycleController extends Controller
      */
     public function show(Request $request, $id)
     {
-        $cycle = DonationCycle::with(['donor.user', 'recipient.user', 'medications', 'payment'])
+        $cycle = DonationCycle::with(['donor.user', 'recipient.user', 'medications', 'payments'])
             ->findOrFail($id);
+        $this->maskCycle($cycle, $request->user());
 
         return response()->json($cycle);
     }
@@ -127,8 +137,8 @@ class DonationCycleController extends Controller
     {
         $user = $request->user();
 
-        if (!in_array($user->role, ['admin', 'clinician'])) {
-            return response()->json(['message' => 'Access denied.'], 403);
+        if ($user->role !== 'clinician') {
+            return response()->json(['message' => 'Access denied. Only clinicians can update donation cycles.'], 403);
         }
 
         $validated = $request->validate([
@@ -159,9 +169,12 @@ class DonationCycleController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
+        $loadedCycle = $cycle->fresh()->load(['donor.user', 'recipient.user', 'medications', 'payments']);
+        $this->maskCycle($loadedCycle, $user);
+
         return response()->json([
             'message' => 'Donation cycle updated',
-            'cycle' => $cycle->fresh()->load(['donor.user', 'recipient.user', 'medications', 'payment']),
+            'cycle' => $loadedCycle,
         ]);
     }
 
@@ -172,8 +185,8 @@ class DonationCycleController extends Controller
     {
         $user = $request->user();
 
-        if (!in_array($user->role, ['admin', 'clinician'])) {
-            return response()->json(['message' => 'Access denied.'], 403);
+        if ($user->role !== 'clinician') {
+            return response()->json(['message' => 'Access denied. Only clinicians can prescribe medications.'], 403);
         }
 
         $validated = $request->validate([
@@ -213,8 +226,8 @@ class DonationCycleController extends Controller
     {
         $user = $request->user();
 
-        if (!in_array($user->role, ['admin', 'clinician'])) {
-            return response()->json(['message' => 'Access denied.'], 403);
+        if ($user->role !== 'clinician') {
+            return response()->json(['message' => 'Access denied. Only clinicians can remove medications.'], 403);
         }
 
         $medication = Medication::findOrFail($medicationId);
@@ -232,5 +245,44 @@ class DonationCycleController extends Controller
         $medication->delete();
 
         return response()->json(['message' => 'Medication removed']);
+    }
+
+    /**
+     * Helper to mask PII according to user role.
+     */
+    private function maskCycle(DonationCycle $cycle, $user)
+    {
+        if (in_array($user->role, ['donor', 'recipient'])) {
+            if ($cycle->donor) {
+                if ($cycle->donor->user) {
+                    $cycle->donor->user->first_name = 'Donor';
+                    $cycle->donor->user->last_name = $cycle->donor->donor_code;
+                    $cycle->donor->user->makeHidden(['email', 'phone', 'date_of_birth', 'avatar']);
+                }
+                $cycle->donor->makeHidden(['photo_path', 'date_of_birth', 'medical_history', 'family_medical_history']);
+            }
+            if ($cycle->recipient) {
+                if ($cycle->recipient->user) {
+                    $cycle->recipient->user->first_name = 'Recipient';
+                    $cycle->recipient->user->last_name = $cycle->recipient->recipient_code;
+                    $cycle->recipient->user->makeHidden(['email', 'phone', 'date_of_birth', 'avatar']);
+                }
+                $cycle->recipient->makeHidden(['diagnosis', 'treatment_history']);
+            }
+        } elseif ($user->role === 'admin') {
+            // Admins see names and codes but not photo (avatar/photo_path), phone, date_of_birth
+            if ($cycle->donor) {
+                if ($cycle->donor->user) {
+                    $cycle->donor->user->makeHidden(['phone', 'date_of_birth', 'avatar']);
+                }
+                $cycle->donor->makeHidden(['photo_path', 'date_of_birth']);
+            }
+            if ($cycle->recipient) {
+                if ($cycle->recipient->user) {
+                    $cycle->recipient->user->makeHidden(['phone', 'date_of_birth', 'avatar']);
+                }
+            }
+        }
+        return $cycle;
     }
 }

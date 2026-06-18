@@ -84,8 +84,8 @@ class ScreeningController extends Controller
     {
         $user = $request->user();
 
-        if (!in_array($user->role, ['admin', 'clinician'])) {
-            return response()->json(['message' => 'Access denied.'], 403);
+        if ($user->role !== 'clinician') {
+            return response()->json(['message' => 'Access denied. Only clinicians can review screening documents.'], 403);
         }
 
         $validated = $request->validate([

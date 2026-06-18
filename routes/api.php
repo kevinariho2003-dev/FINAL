@@ -11,6 +11,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ScreeningController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\DonationCycleController;
+use App\Http\Controllers\DonorQuestionnaireController;
 use App\Http\Controllers\PaymentController;
 
 /*
@@ -21,7 +22,13 @@ use App\Http\Controllers\PaymentController;
 
 // ── Public (no auth) ──
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login',    [AuthController::class, 'login']);
+// OTP email verification
+Route::post('/auth/verify-otp',  [AuthController::class, 'verifyOtp']);
+Route::post('/auth/resend-otp',  [AuthController::class, 'resendOtp']);
+Route::get('/auth/dev/otp',      [AuthController::class, 'devOtp']);   // local env only
+// Flutterwave callback — must be public (Flutterwave calls this)
+Route::get('/payments/callback', [PaymentController::class, 'callback']);
 
 // ── Authenticated ──
 Route::middleware('auth:sanctum')->group(function () {
@@ -37,21 +44,28 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/donors/{id}', [DonorController::class, 'show']);
     Route::put('/donors/{id}', [DonorController::class, 'update']);
     Route::patch('/donors/{id}/status', [DonorController::class, 'updateStatus'])
-         ->middleware('role:admin,clinician');
+         ->middleware('role:clinician');
     Route::post('/donors/{id}/photo', [DonorController::class, 'uploadPhoto']);
+
+    // ── Donor Questionnaire ──
+    Route::get('/questionnaire', [DonorQuestionnaireController::class, 'index']);
+    Route::get('/questionnaire/{phaseId}', [DonorQuestionnaireController::class, 'show']);
+    Route::put('/questionnaire/{phaseId}', [DonorQuestionnaireController::class, 'update']);
+    Route::post('/questionnaire/submit', [DonorQuestionnaireController::class, 'submit']);
+    Route::post('/questionnaire/reset', [DonorQuestionnaireController::class, 'reset']);
 
     // ── Screening Documents ──
     Route::get('/donors/{donorId}/screening-documents', [ScreeningController::class, 'index']);
     Route::post('/donors/{donorId}/screening-documents', [ScreeningController::class, 'store']);
     Route::patch('/screening-documents/{id}/review', [ScreeningController::class, 'review'])
-         ->middleware('role:admin,clinician');
+         ->middleware('role:clinician');
     Route::delete('/screening-documents/{id}', [ScreeningController::class, 'destroy']);
 
     // ── Appointments ──
     Route::get('/donors/{donorId}/appointments', [AppointmentController::class, 'index']);
     Route::post('/donors/{donorId}/appointments', [AppointmentController::class, 'store']);
     Route::patch('/appointments/{id}/status', [AppointmentController::class, 'updateStatus'])
-         ->middleware('role:admin,clinician');
+         ->middleware('role:clinician');
     Route::delete('/appointments/{id}', [AppointmentController::class, 'destroy']);
 
     // ── Recipients ──
@@ -60,35 +74,37 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/recipients/{id}', [RecipientController::class, 'show']);
     Route::put('/recipients/{id}', [RecipientController::class, 'update']);
     Route::patch('/recipients/{id}/status', [RecipientController::class, 'updateStatus'])
-         ->middleware('role:admin,clinician');
+         ->middleware('role:clinician');
 
     // ── Matching ──
     Route::post('/matches/generate/{recipientId}', [MatchController::class, 'generate'])
-         ->middleware('role:admin,clinician');
+         ->middleware('role:clinician');
     Route::get('/matches', [MatchController::class, 'index']);
     Route::get('/matches/{id}', [MatchController::class, 'show']);
     Route::patch('/matches/{id}/review', [MatchController::class, 'review'])
-         ->middleware('role:admin,clinician');
+         ->middleware('role:clinician');
+    Route::patch('/matches/{id}/recipient-review', [MatchController::class, 'recipientReview']);
 
     // ── Donation Cycles ──
     Route::get('/donation-cycles', [DonationCycleController::class, 'index']);
     Route::post('/donation-cycles', [DonationCycleController::class, 'store'])
-         ->middleware('role:admin,clinician');
+         ->middleware('role:clinician');
     Route::get('/donation-cycles/{id}', [DonationCycleController::class, 'show']);
     Route::put('/donation-cycles/{id}', [DonationCycleController::class, 'update'])
-         ->middleware('role:admin,clinician');
+         ->middleware('role:clinician');
 
     // ── Medications (within cycles) ──
     Route::post('/donation-cycles/{cycleId}/medications', [DonationCycleController::class, 'addMedication'])
-         ->middleware('role:admin,clinician');
+         ->middleware('role:clinician');
     Route::delete('/medications/{id}', [DonationCycleController::class, 'removeMedication'])
-         ->middleware('role:admin,clinician');
+         ->middleware('role:clinician');
 
     // ── Payments ──
-    Route::post('/payments', [PaymentController::class, 'store'])
-         ->middleware('role:admin,clinician');
-    Route::patch('/payments/{id}/status', [PaymentController::class, 'updateStatus'])
-         ->middleware('role:admin');
+    // Role checks are handled inside the controller (recipient=service_fee only; clinician/admin=all stages)
+    Route::get('/payments',                    [PaymentController::class, 'index']);
+    Route::post('/payments',                   [PaymentController::class, 'store']);
+    Route::post('/payments/initiate',          [PaymentController::class, 'initiate']);
+    Route::patch('/payments/{id}/status',      [PaymentController::class, 'updateStatus'])->middleware('role:admin,clinician');
 
     // ── Consents ──
     Route::get('/consents', [ConsentController::class, 'index']);
@@ -104,6 +120,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/matching-weights', [AdminController::class, 'getWeights']);
         Route::put('/matching-weights', [AdminController::class, 'updateWeights']);
         Route::post('/clinicians', [AdminController::class, 'createClinician']);
-        Route::get('/pending-donors', [AdminController::class, 'pendingDonors']);
+        // pending-donors review moved to clinician scope (via /donors endpoint)
     });
 });

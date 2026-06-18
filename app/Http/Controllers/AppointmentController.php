@@ -17,7 +17,25 @@ class AppointmentController extends Controller
         $user = $request->user();
         $profile = DonorProfile::findOrFail($donorId);
 
-        if ($user->role === 'donor' && $profile->user_id !== $user->id) {
+        $authorized = false;
+        if ($user->role === 'donor' && $profile->user_id === $user->id) {
+            $authorized = true;
+        } elseif ($user->role === 'recipient') {
+            $recipientProfile = \App\Models\RecipientProfile::where('user_id', $user->id)->first();
+            if ($recipientProfile) {
+                $hasActiveCycle = \App\Models\DonationCycle::where('donor_id', $donorId)
+                    ->where('recipient_id', $recipientProfile->id)
+                    ->where('outcome', 'pending')
+                    ->exists();
+                if ($hasActiveCycle) {
+                    $authorized = true;
+                }
+            }
+        } elseif (in_array($user->role, ['admin', 'clinician'])) {
+            $authorized = true;
+        }
+
+        if (!$authorized) {
             return response()->json(['message' => 'Access denied.'], 403);
         }
 
@@ -35,14 +53,35 @@ class AppointmentController extends Controller
     public function store(Request $request, $donorId)
     {
         $user = $request->user();
-        $profile = DonorProfile::where('id', $donorId)->where('user_id', $user->id)->first();
+        $profile = DonorProfile::findOrFail($donorId);
 
-        if (!$profile) {
-            return response()->json(['message' => 'Donor profile not found or access denied.'], 403);
+        $authorized = false;
+        if ($user->role === 'donor' && $profile->user_id === $user->id) {
+            if ($profile->status !== 'approved') {
+                return response()->json(['message' => 'You cannot book appointments until your profile is approved by a clinician.'], 403);
+            }
+            $authorized = true;
+        } elseif ($user->role === 'recipient') {
+            $recipientProfile = \App\Models\RecipientProfile::where('user_id', $user->id)->first();
+            if ($recipientProfile) {
+                $hasActiveCycle = \App\Models\DonationCycle::where('donor_id', $donorId)
+                    ->where('recipient_id', $recipientProfile->id)
+                    ->where('outcome', 'pending')
+                    ->exists();
+                if ($hasActiveCycle) {
+                    $authorized = true;
+                }
+            }
+        } elseif (in_array($user->role, ['admin', 'clinician'])) {
+            $authorized = true;
+        }
+
+        if (!$authorized) {
+            return response()->json(['message' => 'Access denied.'], 403);
         }
 
         $validated = $request->validate([
-            'appointment_type' => 'required|in:initial_screening,follow_up,genetic_test',
+            'appointment_type' => 'required|in:initial_screening,follow_up,genetic_test,egg_retrieval',
             'preferred_date' => 'required|date|after:today',
             'preferred_time_slot' => 'required|in:morning,afternoon,evening',
             'donor_notes' => 'nullable|string|max:500',
@@ -80,8 +119,8 @@ class AppointmentController extends Controller
     {
         $user = $request->user();
 
-        if (!in_array($user->role, ['admin', 'clinician'])) {
-            return response()->json(['message' => 'Access denied.'], 403);
+        if ($user->role !== 'clinician') {
+            return response()->json(['message' => 'Access denied. Only clinicians can manage appointment status.'], 403);
         }
 
         $validated = $request->validate([

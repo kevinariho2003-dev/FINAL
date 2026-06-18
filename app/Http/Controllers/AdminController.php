@@ -13,7 +13,6 @@ use App\Models\DonationCycle;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Password;
-use Illuminate\Support\Facades\Hash;
 
 class AdminController extends Controller
 {
@@ -35,13 +34,14 @@ class AdminController extends Controller
         ]);
 
         $user = User::create([
-            'first_name' => $validated['first_name'],
-            'last_name' => $validated['last_name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'] ?? null,
-            'role' => 'clinician',
-            'password' => Hash::make($validated['password']),
-            'is_active' => true,
+            'first_name'        => $validated['first_name'],
+            'last_name'         => $validated['last_name'],
+            'email'             => $validated['email'],
+            'phone'             => $validated['phone'] ?? null,
+            'role'              => 'clinician',
+            'password'          => $validated['password'],   // model cast auto-hashes
+            'is_active'         => true,
+            'email_verified_at' => now(),                    // admin-created = pre-verified
         ]);
 
         // Create clinician profile (ER diagram: Users 1:1 Clinicians)
@@ -69,18 +69,7 @@ class AdminController extends Controller
         ], 201);
     }
 
-    /**
-     * Get pending donor profiles for admin review.
-     */
-    public function pendingDonors()
-    {
-        $donors = DonorProfile::with('user')
-            ->where('status', 'pending')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return response()->json($donors);
-    }
+    // pendingDonors() removed — donor review is now clinician-only (via DonorController)
 
     /**
      * System statistics dashboard.

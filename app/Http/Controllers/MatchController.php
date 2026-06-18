@@ -108,8 +108,9 @@ class MatchController extends Controller
                 'passed_hard_filter' => count($results),
                 'matches_saved' => count($savedMatches),
             ],
-            'matches' => collect($savedMatches)->map(function ($m) {
-                return $m->load(['donor.user', 'recipient.user']);
+            'matches' => collect($savedMatches)->map(function ($m) use ($user) {
+                $m->load(['donor.user', 'recipient.user']);
+                return $this->maskMatch($m, $user);
             }),
         ]);
     }
@@ -127,7 +128,7 @@ class MatchController extends Controller
             $recipientProfile = RecipientProfile::where('user_id', $user->id)->first();
             if (!$recipientProfile) return response()->json([]);
             $query->where('recipient_id', $recipientProfile->id)
-                  ->where('status', 'approved'); // Recipients only see approved
+                  ->whereIn('status', ['proposed', 'clinician_review', 'approved', 'completed']);
         } elseif ($user->role === 'donor') {
             $donorProfile = DonorProfile::where('user_id', $user->id)->first();
             if (!$donorProfile) return response()->json([]);
@@ -144,6 +145,11 @@ class MatchController extends Controller
         }
 
         $matches = $query->orderBy('match_score', 'desc')->paginate(20);
+
+        $matches->getCollection()->transform(function ($match) use ($user) {
+            return $this->maskMatch($match, $user);
+        });
+
         return response()->json($matches);
     }
 
@@ -153,6 +159,7 @@ class MatchController extends Controller
     public function show(Request $request, $id)
     {
         $match = MatchResult::with(['donor.user', 'recipient.user', 'reviewer'])->findOrFail($id);
+        $this->maskMatch($match, $request->user());
         return response()->json($match);
     }
 
@@ -193,9 +200,106 @@ class MatchController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
+        $loadedMatch = $match->fresh()->load(['donor.user', 'recipient.user', 'reviewer']);
+        $this->maskMatch($loadedMatch, $user);
+
         return response()->json([
             'message' => 'Match ' . $validated['status'],
-            'match' => $match->fresh()->load(['donor.user', 'recipient.user', 'reviewer']),
+            'match' => $loadedMatch,
         ]);
+    }
+
+    /**
+     * Recipient review — accept or reject a matched donor.
+     */
+    public function recipientReview(Request $request, $id)
+    {
+        $user = $request->user();
+
+        if ($user->role !== 'recipient') {
+            return response()->json(['message' => 'Access denied.'], 403);
+        }
+
+        $recipientProfile = RecipientProfile::where('user_id', $user->id)->firstOrFail();
+        $match = MatchResult::where('id', $id)->where('recipient_id', $recipientProfile->id)->firstOrFail();
+
+        if (!in_array($match->status, ['approved', 'completed'])) {
+            return response()->json(['message' => 'Match is not in a state that can be reviewed by recipient.'], 422);
+        }
+
+        $validated = $request->validate([
+            'recipient_status' => 'required|in:accepted,rejected',
+        ]);
+
+        $old = $match->recipient_status;
+        $match->update([
+            'recipient_status' => $validated['recipient_status'],
+        ]);
+
+        AuditLog::create([
+            'user_id' => $user->id,
+            'action' => 'match.recipient_reviewed',
+            'resource_type' => 'Match',
+            'resource_id' => $match->id,
+            'old_values' => ['recipient_status' => $old],
+            'new_values' => ['recipient_status' => $validated['recipient_status']],
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
+        $loadedMatch = $match->fresh()->load(['donor.user', 'recipient.user', 'reviewer']);
+        $this->maskMatch($loadedMatch, $user);
+
+        return response()->json([
+            'message' => 'Match ' . $validated['recipient_status'] . ' by recipient.',
+            'match' => $loadedMatch,
+        ]);
+    }
+
+    /**
+     * Helper to mask PII according to user role.
+     */
+    private function maskMatch(MatchResult $match, $user)
+    {
+        if (in_array($user->role, ['donor', 'recipient'])) {
+            if ($match->donor) {
+                if ($match->donor->user) {
+                    $match->donor->user->first_name = 'Donor';
+                    $match->donor->user->last_name = $match->donor->donor_code;
+                    $hiddenUserFields = ['email', 'phone', 'date_of_birth'];
+                    if ($user->role !== 'recipient') {
+                        $hiddenUserFields[] = 'avatar';
+                    }
+                    $match->donor->user->makeHidden($hiddenUserFields);
+                }
+                $hiddenProfileFields = ['date_of_birth', 'medical_history', 'family_medical_history'];
+                if ($user->role !== 'recipient') {
+                    $hiddenProfileFields[] = 'photo_path';
+                }
+                $match->donor->makeHidden($hiddenProfileFields);
+            }
+            if ($match->recipient) {
+                if ($match->recipient->user) {
+                    $match->recipient->user->first_name = 'Recipient';
+                    $match->recipient->user->last_name = $match->recipient->recipient_code;
+                    $match->recipient->user->makeHidden(['email', 'phone', 'date_of_birth', 'avatar']);
+                }
+                $match->recipient->makeHidden(['diagnosis', 'treatment_history']);
+            }
+        } elseif ($user->role === 'admin') {
+            // Admins see names and codes but not photo (avatar/photo_path), phone, date_of_birth
+            if ($match->donor) {
+                if ($match->donor->user) {
+                    $match->donor->user->makeHidden(['phone', 'date_of_birth', 'avatar']);
+                }
+                $match->donor->makeHidden(['photo_path', 'date_of_birth']);
+            }
+            if ($match->recipient) {
+                if ($match->recipient->user) {
+                    $match->recipient->user->makeHidden(['phone', 'date_of_birth', 'avatar']);
+                }
+            }
+        }
+        return $match;
     }
 }
