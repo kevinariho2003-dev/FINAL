@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 import TabSlider from '../../components/TabSlider';
@@ -52,7 +53,7 @@ const SCREEN_COLOR = {
 /* ─── Confirm Modal ─── */
 function ConfirmModal({ isOpen, title, message, onConfirm, onCancel }) {
     if (!isOpen) return null;
-    return (
+    return createPortal(
         <div className="dnr-modal-overlay" style={{ zIndex: 9999 }}>
             <div className="dnr-modal" style={{ width: '400px', height: 'auto', maxHeight: 'none', padding: '2.5rem 2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center', textAlign: 'center', borderRadius: '24px' }}>
                 <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#f8fafc', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '-0.5rem', border: '1px solid #e2e8f0' }}>
@@ -67,7 +68,8 @@ function ConfirmModal({ isOpen, title, message, onConfirm, onCancel }) {
                     <button style={{ flex: 1, padding: '0.8rem', borderRadius: '14px', border: 'none', background: '#0f172a', color: '#fff', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} onClick={onConfirm} onMouseOver={e=>e.target.style.transform='translateY(-1px)'} onMouseOut={e=>e.target.style.transform='none'}>Confirm</button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
 
@@ -340,7 +342,7 @@ export default function ClinicianDonorList() {
             )}
 
             {/* ── Detail Modal ── */}
-            {(modal || mLoading) && (
+            {(modal || mLoading) && createPortal(
                 <div className="dnr-modal-overlay" onClick={closeModal}>
                     <div className="dnr-modal" onClick={e => e.stopPropagation()}>
                         <button className="dnr-modal-close" onClick={closeModal}>✕</button>
@@ -483,7 +485,8 @@ export default function ClinicianDonorList() {
                             </>
                         )}
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             <ConfirmModal 

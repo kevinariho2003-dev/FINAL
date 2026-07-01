@@ -12,6 +12,8 @@ use App\Models\ClinicianProfile;
 use App\Models\DonationCycle;
 use App\Models\Payment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rules\Password;
 
 class AdminController extends Controller
@@ -76,28 +78,43 @@ class AdminController extends Controller
      */
     public function statistics()
     {
-        return response()->json([
-            'total_users' => User::count(),
-            'total_donors' => DonorProfile::count(),
-            'approved_donors' => DonorProfile::where('status', 'approved')->count(),
-            'pending_donors' => DonorProfile::where('status', 'pending')->count(),
-            'total_recipients' => RecipientProfile::count(),
-            'total_matches' => MatchResult::count(),
-            'approved_matches' => MatchResult::where('status', 'approved')->count(),
-            'proposed_matches' => MatchResult::where('status', 'proposed')->count(),
-            'total_donation_cycles' => DonationCycle::count(),
-            'active_cycles' => DonationCycle::where('outcome', 'pending')->count(),
-            'successful_cycles' => DonationCycle::where('outcome', 'successful')->count(),
-            'total_payments' => Payment::count(),
-            'pending_payments' => Payment::where('payment_status', 'pending')->count(),
-            'completed_payments' => Payment::where('payment_status', 'completed')->count(),
-            'users_by_role' => [
-                'admin' => User::where('role', 'admin')->count(),
-                'clinician' => User::where('role', 'clinician')->count(),
-                'donor' => User::where('role', 'donor')->count(),
-                'recipient' => User::where('role', 'recipient')->count(),
-            ],
-        ]);
+        $data = Cache::remember('admin_statistics', 30, function () {
+            $roleCounts = User::select('role', DB::raw('count(*) as total'))
+                ->groupBy('role')->pluck('total', 'role');
+            $donorCounts = DonorProfile::select('status', DB::raw('count(*) as total'))
+                ->groupBy('status')->pluck('total', 'status');
+            $matchCounts = MatchResult::select('status', DB::raw('count(*) as total'))
+                ->groupBy('status')->pluck('total', 'status');
+            $cycleCounts = DonationCycle::select('outcome', DB::raw('count(*) as total'))
+                ->groupBy('outcome')->pluck('total', 'outcome');
+            $paymentCounts = Payment::select('payment_status', DB::raw('count(*) as total'))
+                ->groupBy('payment_status')->pluck('total', 'payment_status');
+
+            return [
+                'total_users'           => $roleCounts->sum(),
+                'total_donors'          => $donorCounts->sum(),
+                'approved_donors'       => (int) ($donorCounts['approved'] ?? 0),
+                'pending_donors'        => (int) ($donorCounts['pending'] ?? 0),
+                'total_recipients'      => RecipientProfile::count(),
+                'total_matches'         => $matchCounts->sum(),
+                'approved_matches'      => (int) ($matchCounts['approved'] ?? 0),
+                'proposed_matches'      => (int) ($matchCounts['proposed'] ?? 0),
+                'total_donation_cycles' => $cycleCounts->sum(),
+                'active_cycles'         => (int) ($cycleCounts['pending'] ?? 0),
+                'successful_cycles'     => (int) ($cycleCounts['successful'] ?? 0),
+                'total_payments'        => $paymentCounts->sum(),
+                'pending_payments'      => (int) ($paymentCounts['pending'] ?? 0),
+                'completed_payments'    => (int) ($paymentCounts['completed'] ?? 0),
+                'users_by_role'         => [
+                    'admin'     => (int) ($roleCounts['admin'] ?? 0),
+                    'clinician' => (int) ($roleCounts['clinician'] ?? 0),
+                    'donor'     => (int) ($roleCounts['donor'] ?? 0),
+                    'recipient' => (int) ($roleCounts['recipient'] ?? 0),
+                ],
+            ];
+        });
+
+        return response()->json($data);
     }
 
     /**
@@ -113,8 +130,87 @@ class AdminController extends Controller
         if ($request->has('user_id')) {
             $query->where('user_id', $request->user_id);
         }
+        if ($request->has('date_from')) {
+            $query->where('created_at', '>=', $request->date_from);
+        }
+        if ($request->has('date_to')) {
+            $query->where('created_at', '<=', $request->date_to . ' 23:59:59');
+        }
 
         return response()->json($query->paginate(25));
+    }
+
+    /**
+     * Generate a downloadable CSV report of audit logs.
+     */
+    public function auditLogsReport(Request $request)
+    {
+        $query = AuditLog::with('user')->orderBy('created_at', 'desc');
+
+        if ($request->has('action') && $request->action) {
+            $query->where('action', 'like', '%' . $request->action . '%');
+        }
+        if ($request->has('date_from') && $request->date_from) {
+            $query->where('created_at', '>=', $request->date_from);
+        }
+        if ($request->has('date_to') && $request->date_to) {
+            $query->where('created_at', '<=', $request->date_to . ' 23:59:59');
+        }
+
+        $logs = $query->get();
+
+        // Log that a report was generated
+        AuditLog::create([
+            'user_id'       => $request->user()->id,
+            'action'        => 'audit_report.generated',
+            'resource_type' => 'AuditLog',
+            'resource_id'   => 0,
+            'new_values'    => [
+                'total_records' => $logs->count(),
+                'filters'       => $request->only(['action', 'date_from', 'date_to']),
+            ],
+            'ip_address'    => $request->ip(),
+            'user_agent'    => $request->userAgent(),
+        ]);
+
+        $filename = 'EDRMS_Audit_Report_' . now()->format('Y-m-d_His') . '.csv';
+
+        $headers = [
+            'Content-Type'        => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ];
+
+        $callback = function () use ($logs) {
+            $file = fopen('php://output', 'w');
+
+            // CSV header row
+            fputcsv($file, [
+                'ID', 'Date/Time', 'User', 'Role', 'Action',
+                'Resource Type', 'Resource ID',
+                'Old Values', 'New Values',
+                'IP Address', 'User Agent',
+            ]);
+
+            foreach ($logs as $log) {
+                fputcsv($file, [
+                    $log->id,
+                    $log->created_at?->format('Y-m-d H:i:s'),
+                    $log->user ? "{$log->user->first_name} {$log->user->last_name}" : 'System',
+                    $log->user?->role ?? 'N/A',
+                    $log->action,
+                    $log->resource_type,
+                    $log->resource_id,
+                    $log->old_values ? json_encode($log->old_values) : '',
+                    $log->new_values ? json_encode($log->new_values) : '',
+                    $log->ip_address,
+                    $log->user_agent,
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     /**

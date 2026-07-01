@@ -223,7 +223,7 @@ export default function ClinicianMatchReview() {
 
                         return (
                             <div key={match.id} className={`mr-card ${isExpanded ? 'mr-card-open' : ''}`}
-                                style={{ animationDelay: `${i * 50}ms` }}>
+                                style={{ animationDelay: `${i * 50}ms`, borderLeft: `4px solid ${scoreColor}` }}>
                                 <div className="mr-card-main" onClick={() => setExpanded(isExpanded ? null : match.id)}>
                                     <ScoreRing score={match.match_score} />
 
@@ -231,7 +231,7 @@ export default function ClinicianMatchReview() {
                                         <div className="mr-pair-row">
                                             <div className="mr-person mr-donor">
                                                 <div className="mr-person-avatar mr-donor-av">
-                                                    {match.donor?.user?.first_name?.[0]}{match.donor?.user?.last_name?.[0]}
+                                                    {((match.donor?.user?.first_name?.[0] || '') + (match.donor?.user?.last_name?.[0] || '')).toUpperCase()}
                                                 </div>
                                                 <div>
                                                     <div className="mr-person-name">{match.donor?.user?.first_name} {match.donor?.user?.last_name}</div>
@@ -247,7 +247,7 @@ export default function ClinicianMatchReview() {
 
                                             <div className="mr-person mr-recipient">
                                                 <div className="mr-person-avatar mr-recip-av">
-                                                    {match.recipient?.user?.first_name?.[0]}{match.recipient?.user?.last_name?.[0]}
+                                                    {((match.recipient?.user?.first_name?.[0] || '') + (match.recipient?.user?.last_name?.[0] || '')).toUpperCase()}
                                                 </div>
                                                 <div>
                                                     <div className="mr-person-name">{match.recipient?.user?.first_name} {match.recipient?.user?.last_name}</div>

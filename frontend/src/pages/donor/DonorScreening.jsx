@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import '../Dashboard.css';
 import './DonorScreening.css';
@@ -43,6 +44,7 @@ function SvgIcon({ name, className = '' }) {
 }
 
 export default function DonorScreening() {
+    const navigate = useNavigate();
     const [profile, setProfile] = useState(null);
     const [documents, setDocuments] = useState([]);
     const [appointments, setAppointments] = useState([]);
@@ -150,10 +152,11 @@ export default function DonorScreening() {
                 donor_notes: apptNotes || null,
             });
 
-            showToast('success', 'Appointment requested.');
+            showToast('success', 'Appointment requested. Redirecting to tracker...');
             setApptDate('');
             setApptNotes('');
-            fetchAll();
+            await fetchAll();
+            setTimeout(() => navigate('/donor/dashboard'), 1500);
         } catch (err) {
             showToast('error', err.response?.data?.message || 'Booking failed');
         } finally {
@@ -324,6 +327,14 @@ export default function DonorScreening() {
                             <h4 style={{ fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Booking Restricted</h4>
                             <p style={{ fontSize: '0.88rem', lineHeight: 1.5, maxWidth: '320px', margin: '0 auto' }}>
                                 Clinic appointment scheduling is locked until your profile has been officially approved by a clinician.
+                            </p>
+                        </div>
+                    ) : appointments.some(a => a.status === 'requested' || a.status === 'confirmed') ? (
+                        <div style={{ padding: '2.5rem 1.5rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                            <div style={{ fontSize: '3rem', marginBottom: '0.75rem', color: '#3b82f6' }}>📅</div>
+                            <h4 style={{ fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Booking Requested</h4>
+                            <p style={{ fontSize: '0.88rem', lineHeight: 1.5, maxWidth: '320px', margin: '0 auto' }}>
+                                You already have an active appointment requested or confirmed. Please review or update your details in the list below.
                             </p>
                         </div>
                     ) : (

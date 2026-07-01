@@ -44,6 +44,23 @@ export default function DonorCycles() {
         return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     };
 
+    const getCycleEndDate = (cycle) => {
+        if (cycle.end_date) return cycle.end_date;
+        if (!cycle.start_date || !cycle.medications || cycle.medications.length === 0) return null;
+        let maxDays = 0;
+        cycle.medications.forEach(m => {
+            const num = parseInt(m.duration);
+            if (!isNaN(num) && num > maxDays) {
+                maxDays = num;
+            }
+        });
+        if (maxDays === 0) return null;
+        const startDate = new Date(cycle.start_date);
+        const endDate = new Date(startDate.getTime());
+        endDate.setDate(startDate.getDate() + maxDays);
+        return endDate;
+    };
+
     if (loading) return <div className="page-loader"><div className="spinner"></div></div>;
 
     const activeCycles = cycles.filter(c => c.outcome === 'pending');
@@ -73,14 +90,12 @@ export default function DonorCycles() {
             </div>
 
             {cycles.length === 0 ? (
-                <div className="card cycles-empty-card">
-                    <div className="empty-state">
-                        <div className="empty-state-icon"><SvgIcon name="cycle" /></div>
-                        <div className="empty-state-text">No donation cycles yet</div>
-                        <div className="empty-state-sub">
-                            Once you are matched and approved, your clinician will initiate a donation cycle for you.
-                        </div>
-                    </div>
+                <div className="card cycles-empty-card" style={{ textAlign: 'center', padding: '3.5rem 2rem', background: '#f8fafc', border: '1px dashed #cbd5e1' }}>
+                    <img src="/images/empty-state.png" alt="Waiting for cycles" style={{ width: '160px', maxWidth: '100%', marginBottom: '1.5rem', opacity: 0.95 }} />
+                    <h3 style={{ color: '#0f172a', marginBottom: '0.5rem', fontSize: '1.2rem', fontWeight: 'bold' }}>No donation cycles yet</h3>
+                    <p style={{ color: '#64748b', maxWidth: '400px', margin: '0 auto', lineHeight: 1.5 }}>
+                        Once you are matched and approved, your clinician will initiate a donation cycle for you.
+                    </p>
                 </div>
             ) : (
                 <>
@@ -90,6 +105,10 @@ export default function DonorCycles() {
                     {completedCycles.length > 0 && (
                         <CycleSection title="Completed Cycles" cycles={completedCycles} formatDate={formatDate} />
                     )}
+                    <div style={{ textAlign: 'center', padding: '2rem 1.5rem', marginTop: '1rem', opacity: 0.8 }}>
+                        <img src="/images/empty-state.png" alt="Empathetic graphic" style={{ width: '100px', maxWidth: '100%', marginBottom: '1rem' }} />
+                        <p style={{ color: '#64748b', fontSize: '0.9rem' }}>We are with you every step of this journey.</p>
+                    </div>
                 </>
             )}
         </div>
@@ -141,7 +160,7 @@ function CycleCard({ cycle, formatDate, index }) {
 
             <div className="cycle-detail-grid">
                 <Detail label="Start Date" value={formatDate(cycle.start_date)} />
-                <Detail label="End Date" value={formatDate(cycle.end_date)} />
+                <Detail label="End Date" value={formatDate(getCycleEndDate(cycle))} />
                 <Detail label="Eggs Retrieved" value={cycle.eggs_retrieved ?? '-'} />
                 <div className="cycle-detail">
                     <span className="cycle-detail-label">Initial Pay (50%)</span>

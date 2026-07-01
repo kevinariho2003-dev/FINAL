@@ -11,10 +11,10 @@ const Login = lazy(() => import('./pages/auth/Login'));
 const Register = lazy(() => import('./pages/auth/Register'));
 
 // Dashboards
-const DonorDashboard = lazy(() => import('./pages/donor/DonorDashboard'));
-const RecipientDashboard = lazy(() => import('./pages/recipient/RecipientDashboard'));
-const ClinicianDashboard = lazy(() => import('./pages/clinician/ClinicianDashboard'));
-const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+import DonorDashboard from './pages/donor/DonorDashboard';
+import RecipientDashboard from './pages/recipient/RecipientDashboard';
+import ClinicianDashboard from './pages/clinician/ClinicianDashboard';
+import AdminDashboard from './pages/admin/AdminDashboard';
 
 // Donor pages
 const DonorProfileForm = lazy(() => import('./pages/donor/DonorProfileForm'));
@@ -62,15 +62,23 @@ function FloatingBackground() {
   );
 }
 
+const SuspenseWrapper = ({ children }) => (
+  <Suspense fallback={
+    <div className="page" style={{ position: 'relative' }}>
+      <div style={{
+        position: 'fixed', top: 0, left: 0, width: '100%', height: '3px', zIndex: 9999,
+        background: 'linear-gradient(90deg, transparent 0%, var(--accent, #0ea5e9) 50%, transparent 100%)',
+        animation: 'suspenseBar 1.2s ease-in-out infinite',
+      }} />
+    </div>
+  }>
+    {children}
+  </Suspense>
+);
+
 function AppRoutes() {
   const { user } = useAuth();
   const location = useLocation();
-
-  const SuspenseWrapper = ({ children }) => (
-    <Suspense fallback={<div className="page-loader"><div className="spinner"></div></div>}>
-      {children}
-    </Suspense>
-  );
 
   if (location.pathname === '/momo-validation') {
     return (

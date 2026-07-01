@@ -684,6 +684,12 @@ tr:hover td { background: var(--accent-subtle); }
 }
 .animate-pulse { animation: pulse 2s ease-in-out infinite; }
 
+/* ── Suspense loading bar ── */
+@keyframes suspenseBar {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
 /* ══════════════════════════════════════════════
    RESPONSIVE
    ══════════════════════════════════════════════ */

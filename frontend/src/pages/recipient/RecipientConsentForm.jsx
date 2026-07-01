@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 import '../Dashboard.css';
@@ -41,6 +42,7 @@ function SvgIcon({ name, className = '' }) {
 
 export default function RecipientConsentForm() {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [consents, setConsents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState('');
@@ -89,7 +91,22 @@ export default function RecipientConsentForm() {
                 consent_text: info.description,
             });
             setMessage({ type: 'success', text: `${info.label} consent granted.` });
-            await fetchConsents();
+            
+            const newRes = await api.get('/consents');
+            const newConsents = newRes.data || [];
+            setConsents(newConsents);
+            
+            const newGrantedCount = RECIPIENT_CONSENT_TYPES.filter(ct => {
+                const matching = newConsents.filter(c => c.consent_type === ct.value);
+                if (matching.length === 0) return null;
+                const status = matching.reduce((a, b) => a.version > b.version ? a : b);
+                return status && status.status === 'granted';
+            }).length;
+            
+            if (newGrantedCount === RECIPIENT_CONSENT_TYPES.length) {
+                setMessage({ type: 'success', text: `All consents granted successfully! Redirecting to dashboard...` });
+                setTimeout(() => navigate('/recipient/dashboard'), 1500);
+            }
         } catch (err) {
             setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to grant consent.' });
         } finally {

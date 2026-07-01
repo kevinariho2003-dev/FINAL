@@ -24,6 +24,7 @@ use App\Http\Controllers\PaymentController;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login',    [AuthController::class, 'login']);
 // OTP email verification
+Route::post('/auth/google',      [AuthController::class, 'googleLogin']);
 Route::post('/auth/verify-otp',  [AuthController::class, 'verifyOtp']);
 Route::post('/auth/resend-otp',  [AuthController::class, 'resendOtp']);
 Route::get('/auth/dev/otp',      [AuthController::class, 'devOtp']);   // local env only
@@ -64,8 +65,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // ── Appointments ──
     Route::get('/donors/{donorId}/appointments', [AppointmentController::class, 'index']);
     Route::post('/donors/{donorId}/appointments', [AppointmentController::class, 'store']);
-    Route::patch('/appointments/{id}/status', [AppointmentController::class, 'updateStatus'])
-         ->middleware('role:clinician');
+    Route::post('/clinician/schedule-appointment', [AppointmentController::class, 'clinicianStore'])->middleware('role:clinician');
+    Route::patch('/appointments/{id}/status', [AppointmentController::class, 'updateStatus'])->middleware('role:admin,clinician');
+    Route::post('/appointments/{id}/complete', [AppointmentController::class, 'completeAppointment'])->middleware('role:admin,clinician');
     Route::delete('/appointments/{id}', [AppointmentController::class, 'destroy']);
 
     // ── Recipients ──
@@ -115,6 +117,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:admin')->prefix('admin')->group(function () {
         Route::get('/statistics', [AdminController::class, 'statistics']);
         Route::get('/audit-logs', [AdminController::class, 'auditLogs']);
+        Route::get('/audit-logs/report', [AdminController::class, 'auditLogsReport']);
         Route::get('/users', [AdminController::class, 'users']);
         Route::patch('/users/{id}/toggle', [AdminController::class, 'toggleUserStatus']);
         Route::get('/matching-weights', [AdminController::class, 'getWeights']);
@@ -122,4 +125,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/clinicians', [AdminController::class, 'createClinician']);
         // pending-donors review moved to clinician scope (via /donors endpoint)
     });
+
+    Route::get('/clinician/action-items', [\App\Http\Controllers\ClinicianActionController::class, 'getActionItems'])->middleware('role:admin,clinician');
 });

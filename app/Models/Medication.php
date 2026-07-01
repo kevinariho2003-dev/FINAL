@@ -8,6 +8,7 @@ class Medication extends Model
 {
     protected $fillable = [
         'cycle_id',
+        'target_patient',
         'drug_name',
         'dosage',
         'frequency',

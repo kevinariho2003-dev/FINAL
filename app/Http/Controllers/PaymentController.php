@@ -29,20 +29,19 @@ class PaymentController extends Controller
             'cycle_id'       => 'required|exists:donation_cycles,id',
             'amount'         => 'required|numeric|min:0',
             'payment_method' => 'sometimes|in:bank_transfer,mobile_money,cash,cheque',
-            'payment_stage'  => 'required|in:initial,final,service_fee',
+            'payment_stage'  => 'required|in:initial,final,service_fee,recipient_initial,recipient_final,donor_initial,donor_final',
             'notes'          => 'nullable|string|max:500',
         ]);
 
         $cycle = DonationCycle::with(['donor.user', 'recipient.user'])->findOrFail($validated['cycle_id']);
 
-        // Recipients can only create service_fee payments for their own cycle
         if ($user->role === 'recipient') {
             $recipientProfile = \App\Models\RecipientProfile::where('user_id', $user->id)->first();
             if (!$recipientProfile || $cycle->recipient_id !== $recipientProfile->id) {
                 return response()->json(['message' => 'Access denied.'], 403);
             }
-            if ($validated['payment_stage'] !== 'service_fee') {
-                return response()->json(['message' => 'Recipients can only initiate service fee payments.'], 403);
+            if (!in_array($validated['payment_stage'], ['service_fee', 'recipient_initial', 'recipient_final'])) {
+                return response()->json(['message' => 'Recipients can only initiate recipient payments.'], 403);
             }
         }
 
@@ -102,7 +101,7 @@ class PaymentController extends Controller
         $validated = $request->validate([
             'cycle_id'      => 'required|exists:donation_cycles,id',
             'amount'        => 'required|numeric|min:1000',
-            'payment_stage' => 'required|in:initial,final,service_fee',
+            'payment_stage' => 'required|in:initial,final,service_fee,recipient_initial,recipient_final,donor_initial,donor_final',
             'notes'         => 'nullable|string|max:500',
         ]);
 
@@ -112,35 +111,34 @@ class PaymentController extends Controller
 
         $cycle = DonationCycle::with(['donor.user', 'recipient.user'])->findOrFail($validated['cycle_id']);
 
-        // Recipients can only pay service_fee for their own cycle
         if ($user->role === 'recipient') {
             $recipientProfile = \App\Models\RecipientProfile::where('user_id', $user->id)->first();
             if (!$recipientProfile || $cycle->recipient_id !== $recipientProfile->id) {
                 return response()->json(['message' => 'Access denied.'], 403);
             }
-            if ($validated['payment_stage'] !== 'service_fee') {
-                return response()->json(['message' => 'Recipients can only pay service fees.'], 403);
+            if (!in_array($validated['payment_stage'], ['service_fee', 'recipient_initial', 'recipient_final'])) {
+                return response()->json(['message' => 'Recipients can only initiate recipient payments.'], 403);
             }
         }
 
         // Prevent duplicate payments for same stage
         $existingForStage = Payment::where('cycle_id', $cycle->id)
             ->where('payment_stage', $validated['payment_stage'])
-            ->whereIn('payment_status', ['pending', 'processing', 'completed'])
+            ->where('payment_status', 'completed')
             ->first();
 
         if ($existingForStage) {
             return response()->json([
-                'message' => "A {$validated['payment_stage']} payment already exists for this cycle (status: {$existingForStage->payment_status}).",
+                'message' => "A {$validated['payment_stage']} payment already exists for this cycle and is completed.",
             ], 409);
         }
 
-        // Determine payer: recipient pays service_fee, clinic pays donor compensation
-        $isServiceFee = $validated['payment_stage'] === 'service_fee';
-        $payer = $isServiceFee ? $cycle->recipient->user : $cycle->donor->user;
-        $description = $isServiceFee
-            ? 'Egg Donation Service Fee — Cycle #' . $cycle->id
-            : ucfirst($validated['payment_stage']) . ' Donor Compensation — Cycle #' . $cycle->id;
+        // Determine payer: recipient pays recipient stages, clinic pays donor compensation
+        $isRecipientPayment = in_array($validated['payment_stage'], ['service_fee', 'recipient_initial', 'recipient_final']);
+        $payer = $isRecipientPayment ? $cycle->recipient->user : $cycle->donor->user;
+        $description = $isRecipientPayment
+            ? 'Egg Donation Payment (' . ucfirst($validated['payment_stage']) . ') — Cycle #' . $cycle->id
+            : 'Donor Compensation (' . ucfirst($validated['payment_stage']) . ') — Cycle #' . $cycle->id;
 
         $ref = Payment::generateReference();
 
@@ -247,7 +245,8 @@ class PaymentController extends Controller
             return redirect("{$frontendUrl}/clinician/cycles?payment=error&reason=not_found");
         }
 
-        $redirectBase = $payment->payment_stage === 'service_fee' ? 'recipient/dashboard' : 'clinician/cycles';
+        $isRecipientPayment = in_array($payment->payment_stage, ['service_fee', 'recipient_initial', 'recipient_final']);
+        $redirectBase = $isRecipientPayment ? 'recipient/dashboard' : 'clinician/cycles';
 
         if ($status === 'successful' && $txId) {
             try {
@@ -274,7 +273,7 @@ class PaymentController extends Controller
 
                     AuditLog::create([
                         'user_id'       => $payment->donor->user->id ?? null,
-                        'action'        => $payment->payment_stage === 'service_fee' ? 'payment.received_processing' : 'payment.completed',
+                        'action'        => $isRecipientPayment ? 'payment.received_processing' : 'payment.completed',
                         'resource_type' => 'Payment',
                         'resource_id'   => $payment->id,
                         'old_values'    => ['payment_status' => 'processing'],

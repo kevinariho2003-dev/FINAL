@@ -53,7 +53,13 @@ export default function AdminDashboard() {
         fetchData();
     }, []);
 
-    if (loading) return <div className="page-loader"><div className="spinner"></div></div>;
+    if (loading) return (
+        <div className="page admin-page-custom-bg admin-modern-page">
+            <section className="admin-modern-hero" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
+                <div className="spinner"></div>
+            </section>
+        </div>
+    );
 
     const usersByRole = stats?.users_by_role || {};
     const totalRoleUsers = Object.values(usersByRole).reduce((sum, value) => sum + Number(value || 0), 0) || 1;
@@ -93,6 +99,63 @@ export default function AdminDashboard() {
                     </Link>
                 ))}
             </section>
+
+            {/* ── Admin Action Items ── */}
+            {(() => {
+                const actionItems = [];
+                if (stats?.pending_donors > 0) {
+                    actionItems.push({ icon: 'heart', title: `${stats.pending_donors} Donor(s) Awaiting Review`, desc: 'New donor profiles need clinician review before they can be matched.', to: '/admin/users', state: { filter: 'donor' }, color: '#ec4899' });
+                }
+                if (stats?.proposed_matches > 0) {
+                    actionItems.push({ icon: 'link', title: `${stats.proposed_matches} Match(es) Pending Approval`, desc: 'Proposed matches are awaiting clinical review and approval.', to: '/admin/matching-config', color: '#06b6d4' });
+                }
+                if (stats?.pending_payments > 0) {
+                    actionItems.push({ icon: 'card', title: `${stats.pending_payments} Payment(s) Pending`, desc: 'Payments are awaiting processing or clinical confirmation.', to: '/admin/audit-logs', color: '#f59e0b' });
+                }
+                if (stats?.active_cycles > 0) {
+                    actionItems.push({ icon: 'activity', title: `${stats.active_cycles} Active Donation Cycle(s)`, desc: 'Donation cycles are in progress and may need monitoring.', to: '/admin/audit-logs', color: '#10b981' });
+                }
+
+                return (
+                    <section className="admin-modern-panel" style={{ marginBottom: '1.5rem' }}>
+                        <div className="admin-panel-head">
+                            <div>
+                                <h2>Action Items</h2>
+                                <p>{actionItems.length > 0 ? 'Items that need attention across the system' : 'No outstanding items — the system is running smoothly'}</p>
+                            </div>
+                            <SvgIcon name="check" />
+                        </div>
+                        {actionItems.length > 0 ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                {actionItems.map((item, idx) => (
+                                    <Link key={idx} to={item.to} state={item.state} style={{
+                                        display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem',
+                                        background: `${item.color}08`, border: `1px solid ${item.color}25`, borderRadius: '12px',
+                                        borderLeft: `4px solid ${item.color}`, textDecoration: 'none', color: 'inherit',
+                                        transition: 'transform 0.15s, box-shadow 0.15s',
+                                    }}>
+                                        <span style={{ color: item.color }}><SvgIcon name={item.icon} /></span>
+                                        <div style={{ flex: 1 }}>
+                                            <strong style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>{item.title}</strong>
+                                            <p style={{ margin: '0.2rem 0 0', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>{item.desc}</p>
+                                        </div>
+                                        <SvgIcon name="arrow" />
+                                    </Link>
+                                ))}
+                            </div>
+                        ) : (
+                            <div style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '12px', padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <span style={{ fontSize: '1.4rem' }}>✅</span>
+                                <div>
+                                    <strong style={{ color: '#065f46' }}>All Clear!</strong>
+                                    <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#047857' }}>No pending reviews, no outstanding payments, and all cycles are running smoothly.</p>
+                                </div>
+                            </div>
+                        )}
+                    </section>
+                );
+            })()}
+
 
             <section className="admin-modern-grid">
                 <div className="admin-modern-panel role-panel">

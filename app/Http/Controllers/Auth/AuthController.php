@@ -273,6 +273,71 @@ class AuthController extends Controller
 
     /*
     |------------------------------------------------------------------
+    | 5b. GOOGLE LOGIN
+    |------------------------------------------------------------------
+    */
+    public function googleLogin(Request $request)
+    {
+        $request->validate(['token' => 'required|string']);
+
+        $response = \Illuminate\Support\Facades\Http::withToken($request->token)
+            ->get('https://www.googleapis.com/oauth2/v3/userinfo');
+
+        if ($response->failed()) {
+            return response()->json(['message' => 'Invalid Google token.'], 401);
+        }
+
+        $googleUser = $response->json();
+        $email = $googleUser['email'] ?? null;
+        if (!$email) {
+            return response()->json(['message' => 'Email not provided by Google.'], 400);
+        }
+
+        $user = User::where('email', $email)->first();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'No EDRMS account found with this email. Please register first.',
+                'email'   => $email
+            ], 404);
+        }
+
+        if (!$user->is_active) {
+            return response()->json(['message' => 'Account is deactivated. Contact administrator.'], 403);
+        }
+
+        // Update google_id if empty
+        if (empty($user->google_id)) {
+            $user->update(['google_id' => $googleUser['sub'] ?? null]);
+        }
+
+        // Mark verified if not already
+        if (!$user->email_verified_at) {
+            $user->update(['email_verified_at' => now()]);
+        }
+
+        // Clinicians require OTP on every login
+        if ($user->role === 'clinician') {
+            $this->issueOtp($user->email, ['login' => true]);
+            return response()->json([
+                'requires_otp' => true,
+                'email'        => $user->email,
+                'message'      => 'A verification code has been sent to ' . $user->email,
+            ]);
+        }
+
+        $user->tokens()->delete();
+        $token = $user->createToken('auth-token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Google Login successful',
+            'user'    => $user,
+            'token'   => $token,
+        ]);
+    }
+
+    /*
+    |------------------------------------------------------------------
     | 6. LOGOUT
     |------------------------------------------------------------------
     */

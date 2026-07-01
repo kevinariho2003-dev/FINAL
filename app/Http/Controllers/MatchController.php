@@ -23,8 +23,16 @@ class MatchController extends Controller
             return response()->json(['message' => 'Only clinicians/admins can generate matches.'], 403);
         }
 
-        $recipient = RecipientProfile::findOrFail($recipientId);
-        $donors = DonorProfile::where('status', 'approved')
+        $recipient = RecipientProfile::with('user')->findOrFail($recipientId);
+
+        if ($recipient->user && !$recipient->user->is_active) {
+            return response()->json(['message' => 'Cannot generate matches for a deactivated recipient.'], 422);
+        }
+
+        $donors = DonorProfile::whereHas('user', function ($query) {
+                $query->where('is_active', true);
+            })
+            ->where('status', 'approved')
             ->where('availability_status', 'available')
             ->get();
 

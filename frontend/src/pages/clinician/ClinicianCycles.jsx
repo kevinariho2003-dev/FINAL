@@ -59,7 +59,7 @@ export default function ClinicianCycles() {
     const [createForm, setCreateForm] = useState({ match_id: '', start_date: '' });
     const [creating, setCreating] = useState(false);
 
-    const [medForm, setMedForm] = useState({ drug_name: '', dosage: '', frequency: '', duration: '' });
+    const [medForm, setMedForm] = useState({ target_patient: 'donor', drug_name: '', dosage: '', frequency: '', duration: '' });
     const [addingMed, setAddingMed] = useState(false);
 
     const [payForm, setPayForm] = useState({ amount: '', payment_method: 'bank_transfer', payment_stage: 'initial', notes: '' });
@@ -67,6 +67,10 @@ export default function ClinicianCycles() {
 
     const [updateForm, setUpdateForm] = useState({ end_date: '', eggs_retrieved: '', outcome: 'pending' });
     const [updating, setUpdating] = useState(false);
+
+    const [showAptModal, setShowAptModal] = useState(null);
+    const [aptForm, setAptForm] = useState({ donor_profile_id: '', recipient_profile_id: '', appointment_type: 'egg_retrieval', preferred_date: '', preferred_time_slot: 'morning', clinic_notes: '' });
+    const [addingApt, setAddingApt] = useState(false);
 
     useEffect(() => { fetchCycles(); }, []);
 
@@ -101,6 +105,23 @@ export default function ClinicianCycles() {
         return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     };
 
+    const getCycleEndDate = (cycle) => {
+        if (cycle.end_date) return cycle.end_date;
+        if (!cycle.start_date || !cycle.medications || cycle.medications.length === 0) return null;
+        let maxDays = 0;
+        cycle.medications.forEach(m => {
+            const num = parseInt(m.duration);
+            if (!isNaN(num) && num > maxDays) {
+                maxDays = num;
+            }
+        });
+        if (maxDays === 0) return null;
+        const startDate = new Date(cycle.start_date);
+        const endDate = new Date(startDate.getTime());
+        endDate.setDate(startDate.getDate() + maxDays);
+        return endDate;
+    };
+
     const handleCreate = async (e) => {
         e.preventDefault();
         setCreating(true);
@@ -122,7 +143,7 @@ export default function ClinicianCycles() {
         try {
             await api.post(`/donation-cycles/${showMedModal}/medications`, medForm);
             showToast('success', 'Medication added.');
-            setMedForm({ drug_name: '', dosage: '', frequency: '', duration: '' });
+            setMedForm({ target_patient: 'donor', drug_name: '', dosage: '', frequency: '', duration: '' });
             setShowMedModal(null);
             fetchCycles();
         } catch (err) {
@@ -139,6 +160,20 @@ export default function ClinicianCycles() {
         } catch (err) {
             showToast('error', err.response?.data?.message || 'Failed to remove medication');
         }
+    };
+
+    const handleScheduleApt = async (e) => {
+        e.preventDefault();
+        setAddingApt(true);
+        try {
+            await api.post(`/clinician/schedule-appointment`, aptForm);
+            showToast('success', 'Appointment scheduled successfully.');
+            setShowAptModal(null);
+            fetchCycles();
+        } catch (err) {
+            showToast('error', err.response?.data?.message || 'Failed to schedule appointment');
+        }
+        setAddingApt(false);
     };
 
     const handleCreatePayment = async (e) => {
@@ -314,7 +349,7 @@ export default function ClinicianCycles() {
                                     <div className="cc-detail">
                                         <Icon name="calendar" size={16} />
                                         <span>End Date</span>
-                                        <strong>{formatDate(cycle.end_date)}</strong>
+                                        <strong>{formatDate(getCycleEndDate(cycle))}</strong>
                                     </div>
                                     <div className="cc-detail">
                                         <Icon name="egg" size={16} />
@@ -387,7 +422,8 @@ export default function ClinicianCycles() {
                                         <div className="cc-section-title"><Icon name="pill" size={16} /> Medications ({cycle.medications.length})</div>
                                         <div className="cc-med-list">
                                             {cycle.medications.map(med => (
-                                                <span key={med.id} className="cc-med-chip">
+                                                <span key={med.id} className={`cc-med-chip ${med.target_patient === 'recipient' ? 'cc-recipient-med' : 'cc-donor-med'}`}>
+                                                    <span className="cc-med-target">{med.target_patient === 'recipient' ? 'R' : 'D'}</span>
                                                     {med.drug_name} ({med.dosage})
                                                     <button className="cc-chip-remove" onClick={() => handleRemoveMed(med.id)} title="Remove medication">
                                                         <Icon name="x" size={13} />
@@ -401,6 +437,7 @@ export default function ClinicianCycles() {
                                 <div className="cc-actions">
                                     <button className="cc-action-btn" onClick={() => openUpdateModal(cycle)}><Icon name="edit" size={16} /> Update</button>
                                     <button className="cc-action-btn" onClick={() => setShowMedModal(cycle.id)}><Icon name="pill" size={16} /> Add Med</button>
+                                    <button className="cc-action-btn" onClick={() => { setAptForm({ donor_profile_id: cycle.donor_id, recipient_profile_id: cycle.recipient_id, appointment_type: 'egg_retrieval', preferred_date: '', preferred_time_slot: 'morning', clinic_notes: '' }); setShowAptModal(cycle.id); }}><Icon name="calendar" size={16} /> Schedule</button>
                                     {!allPaid && (
                                         <button className="cc-action-btn cc-action-green" onClick={() => setShowPayModal(cycle.id)}>
                                             <Icon name="wallet" size={16} />
@@ -457,6 +494,13 @@ export default function ClinicianCycles() {
                     <div className="modal-card cc-modal" onClick={e => e.stopPropagation()}>
                         <h2><Icon name="pill" size={22} /> Prescribe Medication</h2>
                         <form onSubmit={handleAddMed}>
+                            <div className="form-group" style={{ marginBottom: '1rem' }}>
+                                <label className="form-label">Target Patient *</label>
+                                <select className="form-select" value={medForm.target_patient} onChange={e => setMedForm({ ...medForm, target_patient: e.target.value })} required>
+                                    <option value="donor">Donor (Stimulation)</option>
+                                    <option value="recipient">Recipient (Estrogen Prep)</option>
+                                </select>
+                            </div>
                             <div className="form-group" style={{ marginBottom: '1rem' }}>
                                 <label className="form-label">Drug Name *</label>
                                 <input className="form-input" value={medForm.drug_name} onChange={e => setMedForm({ ...medForm, drug_name: e.target.value })} placeholder="e.g. Follicle-stimulating hormone (FSH)" required />
@@ -568,6 +612,43 @@ export default function ClinicianCycles() {
                             <div className="cc-modal-actions">
                                 <button type="submit" className="btn btn-primary" disabled={updating}><Icon name="save" size={16} /> {updating ? 'Updating...' : 'Update Cycle'}</button>
                                 <button type="button" className="btn btn-ghost" onClick={() => setShowUpdateModal(null)}>Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {showAptModal && (
+                <div className="modal-overlay" onClick={() => setShowAptModal(null)}>
+                    <div className="modal-card cc-modal" onClick={e => e.stopPropagation()}>
+                        <h2><Icon name="calendar" size={22} /> Schedule Procedure</h2>
+                        <form onSubmit={handleScheduleApt}>
+                            <div className="form-group" style={{ marginBottom: '1rem' }}>
+                                <label className="form-label">Procedure Type *</label>
+                                <select className="form-select" value={aptForm.appointment_type} onChange={e => setAptForm({ ...aptForm, appointment_type: e.target.value })} required>
+                                    <option value="egg_retrieval">Egg Retrieval (Donor)</option>
+                                    <option value="embryo_transfer">Embryo Transfer (Recipient)</option>
+                                </select>
+                            </div>
+                            <div className="form-group" style={{ marginBottom: '1rem' }}>
+                                <label className="form-label">Scheduled Date *</label>
+                                <input type="date" className="form-input" value={aptForm.preferred_date} onChange={e => setAptForm({ ...aptForm, preferred_date: e.target.value })} min={new Date().toISOString().split('T')[0]} required />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: '1rem' }}>
+                                <label className="form-label">Time Slot *</label>
+                                <select className="form-select" value={aptForm.preferred_time_slot} onChange={e => setAptForm({ ...aptForm, preferred_time_slot: e.target.value })} required>
+                                    <option value="morning">Morning</option>
+                                    <option value="afternoon">Afternoon</option>
+                                    <option value="evening">Evening</option>
+                                </select>
+                            </div>
+                            <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                                <label className="form-label">Clinic Notes (optional)</label>
+                                <input className="form-input" value={aptForm.clinic_notes} onChange={e => setAptForm({ ...aptForm, clinic_notes: e.target.value })} placeholder="e.g. Instructions for patient" />
+                            </div>
+                            <div className="cc-modal-actions">
+                                <button type="submit" className="btn btn-primary" disabled={addingApt}><Icon name="save" size={16} /> {addingApt ? 'Scheduling...' : 'Schedule'}</button>
+                                <button type="button" className="btn btn-ghost" onClick={() => setShowAptModal(null)}>Cancel</button>
                             </div>
                         </form>
                     </div>

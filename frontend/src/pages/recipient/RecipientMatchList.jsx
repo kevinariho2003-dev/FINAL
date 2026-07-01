@@ -78,11 +78,11 @@ export default function RecipientMatchList() {
             </div>
 
             {matches.length === 0 ? (
-                <div className="card" style={{ textAlign: 'center', padding: '3.5rem 2rem', borderRadius: '16px', border: '1px dashed var(--border)' }}>
-                    <div style={{ fontSize: '3.5rem', marginBottom: '1.25rem' }}>🔍</div>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>No Matches Yet</h3>
+                <div className="card" style={{ textAlign: 'center', padding: '3.5rem 2rem', borderRadius: '16px', border: '1px dashed var(--border)', background: '#f8fafc' }}>
+                    <img src="/images/empty-state.png" alt="Waiting for match" style={{ width: '160px', maxWidth: '100%', marginBottom: '1.5rem', opacity: 0.95 }} />
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem', color: '#0f172a' }}>Waiting for Matches</h3>
                     <p style={{ color: 'var(--text-muted)', maxWidth: '450px', margin: '0 auto', fontSize: '0.9rem' }}>
-                        Once your clinician runs the matching engine and approves matches, they will appear here.
+                        Once your clinician runs the matching engine and approves matches, they will appear right here for your review.
                     </p>
                 </div>
             ) : (
@@ -251,6 +251,11 @@ export default function RecipientMatchList() {
                             </div>
                         );
                     })}
+
+                    <div style={{ textAlign: 'center', padding: '2rem 1.5rem', marginTop: '1rem', opacity: 0.8 }}>
+                        <img src="/images/empty-state.png" alt="Empathetic graphic" style={{ width: '100px', maxWidth: '100%', marginBottom: '1rem' }} />
+                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>We are with you every step of this journey.</p>
+                    </div>
                 </div>
             )}
         </div>

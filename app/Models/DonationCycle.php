@@ -50,7 +50,7 @@ class DonationCycle extends Model
     /** All compensation payments for this cycle (initial + final) */
     public function payments()
     {
-        return $this->hasMany(Payment::class, 'cycle_id')->orderBy('payment_stage');
+        return $this->hasMany(Payment::class, 'cycle_id')->orderByDesc('id');
     }
 
     // ── Helpers ──

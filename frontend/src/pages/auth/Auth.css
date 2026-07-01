@@ -2392,10 +2392,30 @@
     box-shadow: none;
 }
 
-.auth-split-shell .form-input {
+.auth-split-shell .form-input,
+.auth-split-shell .form-select {
     min-height: 42px;
     padding-top: 0.62rem;
     padding-bottom: 0.62rem;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+}
+
+.auth-split-shell .form-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.auth-split-shell .form-input:focus,
+.auth-split-shell .form-select:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #00d1d1;
+    color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(0, 209, 209, 0.2);
+}
+
+.auth-split-shell .form-label {
+    color: rgba(255, 255, 255, 0.85);
 }
 
 .auth-split-shell .form-group {

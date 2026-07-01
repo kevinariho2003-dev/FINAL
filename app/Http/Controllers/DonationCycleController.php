@@ -190,6 +190,7 @@ class DonationCycleController extends Controller
         }
 
         $validated = $request->validate([
+            'target_patient' => 'required|in:donor,recipient',
             'drug_name' => 'required|string|max:255',
             'dosage' => 'required|string|max:255',
             'frequency' => 'required|string|max:255',

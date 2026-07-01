@@ -98,7 +98,7 @@ class AppointmentController extends Controller
 
         AuditLog::create([
             'user_id' => $user->id,
-            'action' => 'appointment.booked',
+            'action' => 'appointment.requested',
             'resource_type' => 'Appointment',
             'resource_id' => $appointment->id,
             'new_values' => $appointment->toArray(),
@@ -107,8 +107,52 @@ class AppointmentController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Appointment requested successfully',
-            'appointment' => $appointment,
+            'message' => 'Appointment requested successfully.',
+            'appointment' => $appointment
+        ], 201);
+    }
+
+    /**
+     * Clinician schedules an appointment directly.
+     */
+    public function clinicianStore(Request $request)
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'donor_profile_id' => 'nullable|exists:donor_profiles,id',
+            'recipient_profile_id' => 'nullable|exists:recipient_profiles,id',
+            'appointment_type' => 'required|in:initial_screening,follow_up,genetic_test,egg_retrieval,embryo_transfer',
+            'preferred_date' => 'required|date',
+            'preferred_time_slot' => 'required|in:morning,afternoon,evening',
+            'clinic_notes' => 'nullable|string|max:500',
+        ]);
+
+        $appointment = Appointment::create([
+            'donor_profile_id' => $validated['donor_profile_id'] ?: null,
+            'recipient_profile_id' => $validated['recipient_profile_id'] ?: null,
+            'appointment_type' => $validated['appointment_type'],
+            'preferred_date' => $validated['preferred_date'],
+            'preferred_time_slot' => $validated['preferred_time_slot'],
+            'clinic_notes' => $validated['clinic_notes'] ?? null,
+            'status' => 'confirmed', // clinician-initiated is auto-confirmed
+            'confirmed_by' => $user->id,
+            'confirmed_at' => now(),
+        ]);
+
+        AuditLog::create([
+            'user_id' => $user->id,
+            'action' => 'appointment.scheduled',
+            'resource_type' => 'Appointment',
+            'resource_id' => $appointment->id,
+            'new_values' => $appointment->toArray(),
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
+        return response()->json([
+            'message' => 'Appointment scheduled successfully.',
+            'appointment' => $appointment
         ], 201);
     }
 
@@ -128,8 +172,12 @@ class AppointmentController extends Controller
             'clinic_notes' => 'nullable|string|max:500',
         ]);
 
-        $appointment = Appointment::findOrFail($id);
+        $appointment = Appointment::with('donorProfile')->findOrFail($id);
         $old = $appointment->status;
+
+        if ($validated['status'] === 'confirmed' && $appointment->donorProfile->status !== 'approved') {
+            return response()->json(['message' => 'Cannot confirm appointment. The donor profile has not been approved.'], 422);
+        }
 
         $updateData = [
             'status' => $validated['status'],
@@ -180,5 +228,62 @@ class AppointmentController extends Controller
         $appointment->delete();
 
         return response()->json(['message' => 'Appointment cancelled successfully']);
+    }
+
+    /**
+     * Clinician marks an appointment as completed and auto-generates documents if needed.
+     */
+    public function completeAppointment(Request $request, $id)
+    {
+        $user = $request->user();
+
+        if ($user->role !== 'clinician') {
+            return response()->json(['message' => 'Access denied.'], 403);
+        }
+
+        $appointment = Appointment::with('donorProfile')->findOrFail($id);
+
+        if ($appointment->status !== 'confirmed') {
+            return response()->json(['message' => 'Only confirmed appointments can be completed.'], 422);
+        }
+
+        $appointment->update(['status' => 'completed']);
+
+        // Auto-generate document if it's initial screening
+        if ($appointment->appointment_type === 'initial_screening') {
+            $donor = $appointment->donorProfile;
+
+            \App\Models\ScreeningDocument::create([
+                'donor_profile_id' => $donor->id,
+                'document_type' => 'medical_report',
+                'original_filename' => 'System_Generated_Initial_Screening.json',
+                'file_path' => 'system_generated',
+                'status' => 'verified',
+                'notes' => 'Auto-generated system document containing phenotypic data',
+                'test_results' => [
+                    'phenotype' => [
+                        'blood_type' => $donor->blood_type,
+                        'genotype' => $donor->genotype,
+                        'eye_color' => $donor->eye_color,
+                        'hair_color' => $donor->hair_color,
+                        'skin_tone' => $donor->skin_tone,
+                    ],
+                    'background' => [
+                        'education_level' => $donor->education_level,
+                        'ethnicity' => $donor->ethnicity,
+                        'height' => $donor->height_cm,
+                        'weight' => $donor->weight_kg,
+                    ]
+                ],
+                'review_notes' => 'Auto-generated upon initial screening completion',
+                'reviewed_by' => $user->id,
+                'reviewed_at' => now(),
+            ]);
+
+            // Update donor screening status
+            $donor->update(['genetic_screening_status' => 'clear']);
+        }
+
+        return response()->json(['message' => 'Appointment completed successfully', 'appointment' => $appointment]);
     }
 }

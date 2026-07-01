@@ -1487,3 +1487,187 @@
         flex-direction: column;
     }
 }
+
+/* ══════════════════════════════════════════════
+   Audit Report Generation Panel
+   ══════════════════════════════════════════════ */
+
+.audit-report-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.25rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent-hover, #4f46e5));
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md, 10px);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+}
+
+.audit-report-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+}
+
+.audit-report-btn .admin-svg {
+    width: 16px;
+    height: 16px;
+}
+
+.audit-report-panel {
+    background: var(--bg-card, rgba(255,255,255,0.06));
+    backdrop-filter: blur(var(--glass-blur, 12px));
+    -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
+    border: 1px solid var(--border-card, rgba(255,255,255,0.08));
+    border-radius: var(--radius-lg, 16px);
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    animation: fadeInUp 0.3s ease both;
+}
+
+.audit-report-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.5rem;
+}
+
+.audit-report-panel-header h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.audit-report-panel-header .admin-svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--accent, #6366f1);
+}
+
+.audit-report-panel-desc {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.audit-report-filters {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.audit-report-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.audit-report-field label {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+
+.audit-report-field label .admin-svg {
+    width: 13px;
+    height: 13px;
+    stroke: var(--text-muted);
+}
+
+.audit-report-field input[type="date"] {
+    padding: 0.55rem 0.75rem;
+    background: var(--bg-input, rgba(255,255,255,0.05));
+    border: 1px solid var(--border-card, rgba(255,255,255,0.12));
+    border-radius: var(--radius-md, 10px);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s ease;
+    min-width: 160px;
+}
+
+.audit-report-field input[type="date"]:focus {
+    border-color: var(--accent, #6366f1);
+}
+
+.audit-report-field input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.6);
+    cursor: pointer;
+}
+
+.audit-report-download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1.4rem;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md, 10px);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+}
+
+.audit-report-download-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+}
+
+.audit-report-download-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.audit-report-download-btn .admin-svg {
+    width: 15px;
+    height: 15px;
+}
+
+.btn-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.audit-report-range-info {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 0.75rem;
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .audit-report-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .audit-report-field input[type="date"] {
+        min-width: auto;
+        width: 100%;
+    }
+}

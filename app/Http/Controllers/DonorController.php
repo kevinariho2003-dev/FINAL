@@ -69,6 +69,7 @@ class DonorController extends Controller
         }
 
         $validated = $request->validate([
+            'photo' => 'required|image|mimes:jpeg,png,jpg|max:5120',
             'date_of_birth' => 'required|date|before:-18 years',
             'blood_type' => 'nullable|string|in:A+,A-,B+,B-,AB+,AB-,O+,O-',
             'genotype' => 'nullable|string|in:AA,AS,AC,SS,SC,CC',
@@ -92,12 +93,16 @@ class DonorController extends Controller
             $bmi = round($validated['weight_kg'] / ($heightM * $heightM), 1);
         }
 
+        $path = $request->file('photo')->store('donor_photos', 'public');
+        unset($validated['photo']); // Remove photo from validated array to prevent mass assignment issues if any
+
         $profile = DonorProfile::create([
             ...$validated,
             'user_id' => $user->id,
             'donor_code' => DonorProfile::generateCode(),
             'bmi' => $bmi,
             'status' => 'pending',
+            'photo_path' => $path,
         ]);
 
         // Audit log

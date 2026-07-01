@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { IconDNA, IconHeartPulse, IconFlower, IconSparkles, IconMicroscope, IconRocket } from '../../components/Icons';
 import api from '../../services/api';
@@ -41,9 +41,9 @@ function PasswordChecklist({ password, confirmation }) {
     );
 }
 
-function RegistrationForm({ onOtpSent }) {
+function RegistrationForm({ onOtpSent, initialEmail }) {
     const [form, setForm] = useState({
-        first_name: '', last_name: '', email: '',
+        first_name: '', last_name: '', email: initialEmail || '',
         phone: '', role: 'recipient',
         password: '', password_confirmation: '',
     });
@@ -386,6 +386,9 @@ function OtpVerifyPanel({ email, onBack, onSuccess }) {
 export default function Register() {
     const { setUserFromToken } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const initialEmail = location.state?.googleEmail || '';
+    
     const [step, setStep]         = useState('form');  // 'form' | 'otp'
     const [slideDir, setSlideDir] = useState('right'); // direction of incoming panel
     const [pendingEmail, setPendingEmail] = useState('');
@@ -465,7 +468,7 @@ export default function Register() {
                     <div className="otp-panel-host">
                         {step === 'form'
                             ? <div key="form" className={`otp-panel-anim slide-in-from-${slideDir === 'left' ? 'right' : 'left'}`}>
-                                <RegistrationForm onOtpSent={goToOtp} />
+                                <RegistrationForm onOtpSent={goToOtp} initialEmail={initialEmail} />
                               </div>
                             : <div key="otp" className={`otp-panel-anim slide-in-from-${slideDir === 'right' ? 'right' : 'left'}`}>
                                 <OtpVerifyPanel email={pendingEmail} onBack={goBack} onSuccess={handleSuccess} />

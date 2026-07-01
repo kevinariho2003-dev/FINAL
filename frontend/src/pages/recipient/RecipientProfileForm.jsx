@@ -26,10 +26,12 @@ function SvgIcon({ name, className = '' }) {
         check: 'M20 6 9 17l-5-5',
         arrow: 'M5 12h14m-6-6 6 6-6 6',
         back: 'M19 12H5m6-6-6 6 6 6',
+        lock: 'M12 17v-3m-5-3V7a5 5 0 0 1 10 0v4m-12 0h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z',
+        user: 'M20 21a8 8 0 0 0-16 0 M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10z',
     };
 
     return (
-        <svg className={`rp-svg ${className}`} viewBox="0 0 24 24" aria-hidden="true">
+        <svg className={`rp-svg ${className}`} viewBox="0 0 24 24" aria-hidden="true" style={arguments[0]?.style}>
             <path d={paths[name]} />
         </svg>
     );
@@ -125,7 +127,7 @@ export default function RecipientProfileForm() {
     const handleSubmit = async (e) => {
         if (e) e.preventDefault();
 
-        if (!profile && !showConfirmModal) {
+        if (!showConfirmModal) {
             setShowConfirmModal(true);
             return;
         }
@@ -169,7 +171,7 @@ export default function RecipientProfileForm() {
             <div className="rp-hero">
                 <div>
                     <span className="rp-kicker">Recipient Setup</span>
-                    <h1>Recipient Profile 💜</h1>
+                    <h1>Recipient Profile <SvgIcon name="user" style={{ width: '0.85em', height: '0.85em', marginLeft: '0.2rem', verticalAlign: '-0.1em', strokeWidth: 2.5 }} /></h1>
                     <p>
                         {profile
                             ? <>Code: <strong>{profile.recipient_code}</strong> — Status: <span className={`badge badge-${profile.status}`}>{profile.status}</span></>
@@ -199,7 +201,9 @@ export default function RecipientProfileForm() {
                     alignItems: 'flex-start',
                     gap: '0.75rem',
                 }}>
-                    <span style={{ fontSize: '1.5rem' }}>🔒</span>
+                    <span style={{ display: 'flex', alignItems: 'center' }}>
+                        <SvgIcon name="lock" style={{ width: '24px', height: '24px', stroke: '#854d0e', strokeWidth: 2 }} />
+                    </span>
                     <div>
                         <div style={{ fontWeight: 800, color: '#854d0e', fontSize: '0.92rem', marginBottom: '0.25rem' }}>
                             Profile &amp; Preferences Locked
@@ -223,8 +227,8 @@ export default function RecipientProfileForm() {
                             className={`rp-track-step ${isActive ? 'active' : ''} ${isComplete ? 'complete' : ''}`}
                             onClick={() => goToStep(idx)}
                         >
-                            <span className="rp-track-index">
-                                {isComplete ? '✓' : step.number}
+                            <span className="rp-track-index" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                {isComplete ? <SvgIcon name="check" style={{ width: '16px', height: '16px', strokeWidth: 3.5, strokeLinecap: 'round', strokeLinejoin: 'round' }} /> : step.number}
                             </span>
                             <span className="rp-track-copy">
                                 <strong>{step.title}</strong>
@@ -437,16 +441,20 @@ export default function RecipientProfileForm() {
             {showConfirmModal && (
                 <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
                     <div className="modal-content" style={{ background: 'white', borderRadius: '12px', maxWidth: 450, padding: '2rem', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
-                        <h2 style={{ marginTop: 0, marginBottom: '1rem', color: '#111827', fontSize: '1.5rem' }}>Create Profile?</h2>
+                        <h2 style={{ marginTop: 0, marginBottom: '1rem', color: '#111827', fontSize: '1.5rem' }}>
+                            {profile ? 'Submit Preferences?' : 'Create Profile?'}
+                        </h2>
                         <p style={{ color: '#4b5563', lineHeight: 1.6, marginBottom: '1.5rem' }}>
-                            Are you sure you want to submit your profile? Your medical diagnosis will be locked for clinical review. You can still update your donor preferences later.
+                            {profile 
+                                ? 'Are you sure you want to submit your updated preferences? This will be used by the matching engine to find suitable donors.'
+                                : 'Are you sure you want to submit your profile? Your medical diagnosis will be locked for clinical review. You can still update your donor preferences later.'}
                         </p>
                         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
                             <button type="button" className="btn-secondary" onClick={() => setShowConfirmModal(false)} disabled={saving} style={{ padding: '0.6rem 1.2rem', borderRadius: '6px', border: '1px solid #d1d5db', background: 'white', cursor: 'pointer' }}>
                                 No, Review Again
                             </button>
                             <button type="button" className="btn-primary" onClick={handleSubmit} disabled={saving} style={{ padding: '0.6rem 1.2rem', borderRadius: '6px', background: '#9333ea', color: 'white', border: 'none', cursor: 'pointer' }}>
-                                {saving ? 'Creating...' : 'Yes, Submit Profile'}
+                                {saving ? (profile ? 'Updating...' : 'Creating...') : (profile ? 'Yes, Submit Preferences' : 'Yes, Submit Profile')}
                             </button>
                         </div>
                     </div>

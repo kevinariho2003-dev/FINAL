@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 import AnimatedCounter from '../../components/AnimatedCounter';
@@ -121,7 +121,9 @@ const Icons = {
 
 export default function ClinicianDashboard() {
     const { user, setUser } = useAuth();
+    const navigate = useNavigate();
     const [stats, setStats] = useState(null);
+    const [actionItems, setActionItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef(null);
@@ -154,10 +156,12 @@ export default function ClinicianDashboard() {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const [donorsRes, recipientsRes, matchesRes] = await Promise.allSettled([
+                const [donorsRes, allDonorsRes, recipientsRes, matchesRes, actionsRes] = await Promise.allSettled([
                     api.get('/donors', { params: { status: 'pending' } }),
+                    api.get('/donors'),
                     api.get('/recipients'),
                     api.get('/matches', { params: { status: 'proposed' } }),
+                    api.get('/clinician/action-items'),
                 ]);
 
                 const pendingDonors = donorsRes.status === 'fulfilled'
@@ -167,8 +171,8 @@ export default function ClinicianDashboard() {
                 const proposedMatches = matchesRes.status === 'fulfilled'
                     ? (matchesRes.value.data?.data || matchesRes.value.data || []) : [];
 
-                const allDonorsRes = await api.get('/donors').catch(() => ({ data: [] }));
-                const allDonors = allDonorsRes.data?.data || allDonorsRes.data || [];
+                const allDonors = allDonorsRes.status === 'fulfilled'
+                    ? (allDonorsRes.value.data?.data || allDonorsRes.value.data || []) : [];
                 const activeDonors = Array.isArray(allDonors)
                     ? allDonors.filter(d => d.status === 'approved').length : 0;
 
@@ -178,13 +182,23 @@ export default function ClinicianDashboard() {
                     activeDonors,
                     activeRecipients: Array.isArray(allRecipients) ? allRecipients.length : 0,
                 });
+                
+                if (actionsRes.status === 'fulfilled') {
+                    setActionItems(actionsRes.value.data?.action_items || []);
+                }
             } catch { /* ignore */ }
             finally { setLoading(false); }
         };
         fetchStats();
     }, []);
 
-    if (loading) return <div className="page-loader"><div className="spinner"></div></div>;
+    if (loading) return (
+        <div className="page clinician-page-custom-bg">
+            <div className="clin-welcome-banner" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
+                <div className="spinner"></div>
+            </div>
+        </div>
+    );
 
     const greeting = new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 17 ? 'Good afternoon' : 'Good evening';
 
@@ -234,10 +248,10 @@ export default function ClinicianDashboard() {
                         <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(16,185,129,0.15)" strokeWidth="2" />
                         <circle cx="60" cy="60" r="40" fill="none" stroke="rgba(16,185,129,0.1)" strokeWidth="1.5" className="clin-ring-pulse" />
                         <circle cx="60" cy="60" r="30" fill="rgba(16,185,129,0.08)" />
-                        <text x="60" y="58" textAnchor="middle" fill="#059669" fontSize="24" fontWeight="800">
-                            {(stats?.pendingDonors || 0) + (stats?.matchesForReview || 0)}
+                        <text x="60" y="58" textAnchor="middle" fill="#059669" fontSize="24" fontWeight="800" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                            {actionItems.length}
                         </text>
-                        <text x="60" y="72" textAnchor="middle" fill="#6b7280" fontSize="8" fontWeight="500">
+                        <text x="60" y="72" textAnchor="middle" fill="#6b7280" fontSize="8" fontWeight="500" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                             ACTION ITEMS
                         </text>
                     </svg>
@@ -267,6 +281,59 @@ export default function ClinicianDashboard() {
                     </div>
                 ))}
             </div>
+
+            {/* Action Items List */}
+            <div className="clin-section">
+                <div className="clin-section-header">
+                    <h2>Your Action Items</h2>
+                    <span className="clin-section-sub">{actionItems.length > 0 ? 'Tasks that need your immediate attention' : 'No pending tasks — everything is up to date'}</span>
+                </div>
+                {actionItems.length > 0 ? (
+                    <div className="clin-action-items-list" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        {actionItems.map(item => (
+                            <div key={item.id} className="clin-action-item" style={{ 
+                                background: '#fff', 
+                                borderRadius: '12px', 
+                                padding: '1.25rem', 
+                                borderLeft: item.priority === 'high' ? '4px solid #ef4444' : '4px solid #f59e0b',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                cursor: 'pointer'
+                            }} onClick={() => {
+                                if (item.type === 'review_donor') navigate('/clinician/donors');
+                                else if (item.type === 'review_match') navigate('/clinician/matches');
+                                else if (item.type === 'confirm_appointment' || item.type === 'complete_appointment') {
+                                    navigate('/clinician/donors');
+                                } else if (item.type === 'review_payment') {
+                                    navigate('/clinician/cycles');
+                                }
+                            }}>
+                                <div>
+                                    <h4 style={{ margin: '0 0 0.25rem 0', color: '#111827', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        {item.priority === 'high' && <span style={{ color: '#ef4444', fontSize: '1.2rem' }}>⚠️</span>}
+                                        {item.title}
+                                    </h4>
+                                    <p style={{ margin: 0, color: '#4b5563', fontSize: '0.9rem' }}>{item.description}</p>
+                                </div>
+                                <button className="btn btn-primary btn-sm" style={{ padding: '0.5rem 1rem', borderRadius: '8px' }}>
+                                    Resolve
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '12px', padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <span style={{ fontSize: '1.5rem' }}>✅</span>
+                        <div>
+                            <h4 style={{ margin: 0, color: '#065f46', fontSize: '1rem' }}>All Clear!</h4>
+                            <p style={{ margin: '0.25rem 0 0', color: '#047857', fontSize: '0.88rem' }}>No donors awaiting review, no pending matches, and no outstanding appointments. Great job!</p>
+                        </div>
+                    </div>
+                )}
+            </div>
+
 
             {/* Quick Actions */}
             <div className="clin-section">

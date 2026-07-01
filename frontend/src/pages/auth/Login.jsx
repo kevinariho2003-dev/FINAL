@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { IconDNA, IconHeartPulse, IconFlower, IconSparkles, IconMicroscope } from '../../components/Icons';
+import { useGoogleLogin } from '@react-oauth/google';
 import api from '../../services/api';
 import './Auth.css';
 
@@ -19,6 +20,8 @@ export default function Login() {
     const [loading, setLoading] = useState(false);
     const [currentBg, setCurrentBg] = useState(0);
     const [showPassword, setShowPassword] = useState(false);
+    const [showForgot, setShowForgot] = useState(false);
+    const [forgotStatus, setForgotStatus] = useState('');
 
     // OTP verification states
     const [showOtp, setShowOtp] = useState(false);
@@ -101,8 +104,26 @@ export default function Login() {
 
     const handleBack = () => {
         setShowOtp(false);
+        setShowForgot(false);
+        setForgotStatus('');
         setError('');
         setDigits(Array(DIGITS).fill(''));
+    };
+
+    const handleForgot = async (e) => {
+        e.preventDefault();
+        if (!form.email) {
+            setError('Please enter your email address to recover your password.');
+            return;
+        }
+        setError('');
+        setLoading(true);
+        try {
+            await api.post('/auth/forgot-password', { email: form.email }).catch(() => {});
+            setForgotStatus('sent');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleDigitChange = (index, value) => {
@@ -194,8 +215,41 @@ export default function Login() {
         }
     };
 
+    const loginWithGoogle = useGoogleLogin({
+        onSuccess: async (tokenResponse) => {
+            setError('');
+            setLoading(true);
+            try {
+                // Send the access_token to our backend
+                const res = await api.post('/auth/google', { token: tokenResponse.access_token });
+                if (res.data && res.data.requires_otp) {
+                    setOtpEmail(res.data.email);
+                    setShowOtp(true);
+                } else {
+                    const { user, token } = res.data;
+                    localStorage.setItem('auth_token', token);
+                    localStorage.setItem('user', JSON.stringify(user));
+                    setUserFromToken(user);
+                    navigate(`/${user.role}/dashboard`);
+                }
+            } catch (err) {
+                if (err.response?.status === 404 && err.response?.data?.email) {
+                    // Redirect to register, pre-filling email if possible
+                    navigate('/register', { state: { googleEmail: err.response.data.email } });
+                } else {
+                    setError(err.response?.data?.message || 'Google sign-in failed. Please try again.');
+                }
+            } finally {
+                setLoading(false);
+            }
+        },
+        onError: () => {
+            setError('Google sign-in was cancelled or failed.');
+        }
+    });
+
     const handleGoogle = () => {
-        setError('Google sign-in is not connected yet.');
+        loginWithGoogle();
     };
 
     return (
@@ -237,7 +291,51 @@ export default function Login() {
 
                 <main className="auth-split-panel">
                     <div className="auth-flow-card auth-login-card">
-                        {!showOtp ? (
+                        {showForgot ? (
+                            <div className="otp-active-panel" style={{ padding: '2rem' }}>
+                                <div className="otp-header">
+                                    <div className="otp-icon-ring" style={{ background: 'rgba(99, 102, 241, 0.1)', color: '#6366f1' }}>
+                                        <svg viewBox="0 0 24 24" style={{ width: '28px', height: '28px', stroke: 'currentColor', strokeWidth: 2, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }}>
+                                            <path d="M12 17v-3m-5-3V7a5 5 0 0 1 10 0v4m-12 0h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z" />
+                                        </svg>
+                                    </div>
+                                    <h2>Recover Password</h2>
+                                    <p>Enter the email address you used to register. We will send you a secure link to reset your password.</p>
+                                </div>
+                                {forgotStatus === 'sent' ? (
+                                    <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                                        <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '1rem', borderRadius: '8px', color: '#065f46', marginBottom: '1.5rem' }}>
+                                            <strong>✓ Recovery link sent!</strong>
+                                            <p style={{ margin: '0.5rem 0 0', fontSize: '0.85rem' }}>Please check your inbox (and spam folder) for further instructions.</p>
+                                        </div>
+                                        <button className="btn btn-primary btn-block" onClick={handleBack}>Return to Login</button>
+                                    </div>
+                                ) : (
+                                    <form onSubmit={handleForgot} className="auth-wizard-form" style={{ marginTop: '1.5rem' }}>
+                                        <div className="form-group">
+                                            <label className="form-label">Email Address</label>
+                                            <input
+                                                type="email"
+                                                className="form-input"
+                                                placeholder="you@example.com"
+                                                value={form.email}
+                                                onChange={handleChange}
+                                                name="email"
+                                                required
+                                                autoFocus
+                                            />
+                                        </div>
+                                        {error && <div className="alert alert-error">{error}</div>}
+                                        <button type="submit" className="btn btn-primary btn-block btn-lg" disabled={loading}>
+                                            {loading ? 'Sending link...' : 'Send Recovery Link'}
+                                        </button>
+                                        <button type="button" className="otp-back-btn" onClick={handleBack} style={{ marginTop: '1rem' }}>
+                                            ← Back to Login
+                                        </button>
+                                    </form>
+                                )}
+                            </div>
+                        ) : !showOtp ? (
                             <>
                                 <div className="auth-card-header auth-flow-header">
                                     <img src="/images/brand/logo.png" alt="EDRMS" className="auth-card-logo" />
@@ -269,7 +367,16 @@ export default function Login() {
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <label className="form-label">Password</label>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                            <label className="form-label" style={{ marginBottom: 0 }}>Password</label>
+                                            <button 
+                                                type="button" 
+                                                onClick={() => { setShowForgot(true); setError(''); }}
+                                                style={{ background: 'none', border: 'none', padding: 0, color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}
+                                            >
+                                                Forgot password?
+                                            </button>
+                                        </div>
                                         <div className="password-input-wrap">
                                             <input
                                                 type={showPassword ? 'text' : 'password'}

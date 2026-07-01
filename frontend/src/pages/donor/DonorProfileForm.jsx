@@ -28,10 +28,11 @@ function SvgIcon({ name, className = '' }) {
         check: 'M20 6 9 17l-5-5',
         arrow: 'M5 12h14m-6-6 6 6-6 6',
         back: 'M19 12H5m6-6-6 6 6 6',
+        lock: 'M12 17v-3m-5-3V7a5 5 0 0 1 10 0v4m-12 0h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z',
     };
 
     return (
-        <svg className={`dp-svg ${className}`} viewBox="0 0 24 24" aria-hidden="true">
+        <svg className={`dp-svg ${className}`} viewBox="0 0 24 24" aria-hidden="true" style={arguments[0]?.style}>
             <path d={paths[name]} />
         </svg>
     );
@@ -49,6 +50,7 @@ export default function DonorProfileForm() {
     const [errors, setErrors] = useState({});
     const [uploading, setUploading] = useState(false);
     const [photoPreview, setPhotoPreview] = useState(null);
+    const [selectedPhotoFile, setSelectedPhotoFile] = useState(null);
     const [activeStep, setActiveStep] = useState(0);
     const photoInputRef = useRef(null);
     const topRef = useRef(null);
@@ -120,11 +122,18 @@ export default function DonorProfileForm() {
 
     const handlePhotoSelect = async (e) => {
         const file = e.target.files?.[0];
-        if (!file || !profile) return;
+        if (!file) return;
 
         const reader = new FileReader();
         reader.onload = (ev) => setPhotoPreview(ev.target.result);
         reader.readAsDataURL(file);
+
+        if (!profile) {
+            setSelectedPhotoFile(file);
+            setSuccess('Photo selected. You can now submit your profile.');
+            setTimeout(() => setSuccess(''), 3000);
+            return;
+        }
 
         setUploading(true);
         setError('');
@@ -135,7 +144,8 @@ export default function DonorProfileForm() {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
             setPhotoPreview(res.data.photo_url);
-            setSuccess('Photo updated successfully.');
+            setSuccess('Photo updated successfully. Redirecting to tracker...');
+            setTimeout(() => navigate('/donor/dashboard'), 1500);
             scrollTop();
         } catch (err) {
             setError(err.response?.data?.message || 'Photo upload failed');
@@ -151,6 +161,12 @@ export default function DonorProfileForm() {
     const handleSubmit = async (e) => {
         if (e) e.preventDefault();
         
+        if (!profile && !selectedPhotoFile) {
+            setError('Please select a profile photo from the side panel before submitting.');
+            scrollTop();
+            return;
+        }
+
         if (!profile && !showConfirmModal) {
             setShowConfirmModal(true);
             return;
@@ -172,13 +188,21 @@ export default function DonorProfileForm() {
                 setSuccess('Details updated successfully. Redirecting...');
                 setTimeout(() => navigate('/donor/dashboard'), 1500);
             } else {
-                await api.post('/donors', payload);
+                const formData = new FormData();
+                Object.keys(payload).forEach(k => {
+                    if (payload[k] !== null) formData.append(k, payload[k]);
+                });
+                formData.append('photo', selectedPhotoFile);
+
+                await api.post('/donors', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                await fetchProfile();
                 setJustCreated(true);
                 setShowConfirmModal(false);
-                setSuccess('Profile created successfully. Redirecting to dashboard...');
+                setSuccess('Profile created successfully! Redirecting to dashboard...');
                 setTimeout(() => navigate('/donor/dashboard'), 1500);
             }
-            await fetchProfile();
             scrollTop();
         } catch (err) {
             if (err.response?.data?.errors) {
@@ -248,7 +272,9 @@ export default function DonorProfileForm() {
                     alignItems: 'flex-start',
                     gap: '0.75rem',
                 }}>
-                    <span style={{ fontSize: '1.5rem' }}>🔒</span>
+                    <span style={{ display: 'flex', alignItems: 'center' }}>
+                        <SvgIcon name="lock" style={{ width: '24px', height: '24px', stroke: '#854d0e', strokeWidth: 2 }} />
+                    </span>
                     <div>
                         <div style={{ fontWeight: 800, color: '#854d0e', fontSize: '0.92rem', marginBottom: '0.25rem' }}>
                             Profile Locked &amp; Submitted
@@ -430,15 +456,15 @@ export default function DonorProfileForm() {
                         <SvgIcon name="camera" />
                         <div>
                             <h2>Profile Photo</h2>
-                            <p>{profile ? 'Click the photo area to upload or update it.' : 'Create your profile first, then add your photo.'}</p>
+                            <p>{profile ? 'Click the photo area to update your photo.' : 'Please add a clear, front-facing photo to submit your profile.'}</p>
                         </div>
                     </div>
 
                     <button
                         type="button"
-                        className={`donor-photo-container ${uploading ? 'uploading' : ''} ${!profile ? 'disabled' : ''}`}
-                        onClick={() => profile && photoInputRef.current?.click()}
-                        disabled={!profile || uploading}
+                        className={`donor-photo-container ${uploading ? 'uploading' : ''}`}
+                        onClick={() => !uploading && photoInputRef.current?.click()}
+                        disabled={uploading}
                     >
                         {photoPreview ? (
                             <img src={photoPreview} alt="Donor" className="donor-photo-img" />
@@ -446,7 +472,7 @@ export default function DonorProfileForm() {
                             <div className="donor-photo-placeholder">
                                 <SvgIcon name="user" className="donor-photo-svg" />
                                 <span className="donor-photo-text">
-                                    {profile ? 'Click to add photo' : 'Save profile first'}
+                                    {profile ? 'Click to update photo' : 'Click to select photo'}
                                 </span>
                             </div>
                         )}
@@ -455,7 +481,7 @@ export default function DonorProfileForm() {
                                 <div className="spinner" style={{ width: 28, height: 28 }}></div>
                             </div>
                         )}
-                        {profile && !uploading && (
+                        {(profile || selectedPhotoFile) && !uploading && (
                             <span className="donor-photo-edit-badge"><SvgIcon name="camera" /></span>
                         )}
                     </button>

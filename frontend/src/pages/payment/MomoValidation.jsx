@@ -55,9 +55,8 @@ export default function MomoValidation() {
         inputRefs.current[Math.min(pasted.length, DIGITS - 1)]?.focus();
     };
 
-    const handleVerify = () => {
-        const otp = digits.join('');
-        if (otp.length !== DIGITS) {
+    const processPayment = (otpString) => {
+        if (otpString.length !== DIGITS) {
             setError('Please enter all 6 digits.');
             return;
         }
@@ -72,6 +71,8 @@ export default function MomoValidation() {
             window.location.href = callbackUrl;
         }, 2000);
     };
+
+    const handleVerify = () => processPayment(digits.join(''));
 
     const handleCancel = () => {
         const callbackUrl = `${api.defaults.baseURL}/payments/callback?status=cancelled&tx_ref=${txRef}`;
@@ -154,11 +155,10 @@ export default function MomoValidation() {
                             className="flw-peek-btn"
                             onClick={() => {
                                 setDigits(['1', '2', '3', '4', '5', '6']);
-                                inputRefs.current[5]?.focus();
                             }}
                             disabled={loading}
                         >
-                            Autofill
+                            Autofill Code
                         </button>
                     </div>
                 </div>

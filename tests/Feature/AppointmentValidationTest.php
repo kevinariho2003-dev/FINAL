@@ -22,7 +22,7 @@ class AppointmentValidationTest extends TestCase
             'user_id' => $user->id,
         ]);
 
-        $response = $this->actingAs($user, 'api')->postJson(
+        $response = $this->actingAs($user, 'sanctum')->postJson(
             "/api/donors/{$profile->id}/appointments",
             [
                 'appointment_type' => '',
@@ -50,7 +50,7 @@ class AppointmentValidationTest extends TestCase
             'user_id' => $user->id,
         ]);
 
-        $response = $this->actingAs($user, 'api')->postJson(
+        $response = $this->actingAs($user, 'sanctum')->postJson(
             "/api/donors/{$profile->id}/appointments",
             [
                 'appointment_type' => 'initial_screening',
@@ -62,7 +62,7 @@ class AppointmentValidationTest extends TestCase
 
         $response->assertStatus(201);
         $response->assertJsonFragment([
-            'message' => 'Appointment requested successfully',
+            'message' => 'Appointment requested successfully.',
         ]);
 
         $this->assertDatabaseHas('appointments', [
@@ -81,7 +81,7 @@ class AppointmentValidationTest extends TestCase
 
         $otherProfile = DonorProfile::factory()->create();
 
-        $response = $this->actingAs($user, 'api')->postJson(
+        $response = $this->actingAs($user, 'sanctum')->postJson(
             "/api/donors/{$otherProfile->id}/appointments",
             [
                 'appointment_type' => 'initial_screening',

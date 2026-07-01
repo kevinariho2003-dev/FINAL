@@ -8,6 +8,7 @@ class Appointment extends Model
 {
     protected $fillable = [
         'donor_profile_id',
+        'recipient_profile_id',
         'appointment_type',
         'preferred_date',
         'preferred_time_slot',
@@ -26,6 +27,11 @@ class Appointment extends Model
     public function donorProfile()
     {
         return $this->belongsTo(DonorProfile::class);
+    }
+
+    public function recipientProfile()
+    {
+        return $this->belongsTo(RecipientProfile::class);
     }
 
     public function confirmer()
